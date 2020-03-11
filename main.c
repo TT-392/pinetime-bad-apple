@@ -2,15 +2,21 @@
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 
+
+#include "display.c"
+
+
 int main(void)
-{			
-    nrf_gpio_cfg_output(23);
-    while (1){	
-        nrf_gpio_pin_clear(23);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_set(23);
-        nrf_delay_ms(1000);
-    }
+{
+    display_backlight(255);
+    display_init();
+
+    writesquare(50, 50, 100, 200, 0x6666);
+
+
+    
+
+	while(1) {
+	}
+
 }
-
-
