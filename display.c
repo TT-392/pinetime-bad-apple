@@ -1,17 +1,67 @@
 #include "nrf.h"
+#include "nrf_log.h"
+#include "nrf_log_default_backends.h"
+#include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "display_defines.h"
 
 
+#define SPI_INSTANCE  0 /**< SPI instance index. */
+static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
+static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
+
+// placeholder for actual brightness control
+void display_backlight(char brightness) {
+    nrf_gpio_cfg_output(LCD_BACKLIGHT_HIGH);	
+    if (brightness != 0) {
+        nrf_gpio_pin_write(LCD_BACKLIGHT_HIGH,0);
+    } else {
+        nrf_gpio_pin_write(LCD_BACKLIGHT_HIGH,1);
+    }
+}
+
+int counter = 0;
+void spi_event_handler(nrf_drv_spi_evt_t const *p_event, void *p_context) {
+    spi_xfer_done = true;
+  //  counter++;
+  //  if (counter > 1000) {
+  //  //    display_backlight(255);
+  //  }
+
+}
+
+
 uint8_t display_send(bool mode, uint8_t byte) {
-	nrf_gpio_pin_write(LCD_COMMAND,mode);
-	uint8_t r;
+    nrf_gpio_pin_write(LCD_COMMAND,mode);
+    spi_xfer_done = false;
+    uint8_t r = 4;
+
+    /**/
+    uint8_t m_tx_buf[1];         
+    m_tx_buf[0] = byte;
+
+    uint8_t m_length = sizeof(m_tx_buf); 
+
+    nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, NULL, 0);
+
+
+    while (!spi_xfer_done) {
+        __NOP();
+    }
+    //nrf_delay_ms(10);
+    /**/
+
+
+    /*
 	NRF_SPI0->EVENTS_READY=0;           // ready
 	NRF_SPI0->TXD=byte;                 // out
     while(NRF_SPI0->EVENTS_READY==0){;} // wait
 	r=NRF_SPI0->RXD;                    // in
+
+    nrf_delay_ms(1);
 	return (int)r;
+    */
 }
 
 void display_init() {
@@ -34,6 +84,7 @@ void display_init() {
     ///////////////
     // spi setup //
     ///////////////
+    /*
 	NRF_SPI0->ENABLE=0;
 
 	NRF_SPI0->PSELSCK=LCD_SCK;
@@ -44,6 +95,23 @@ void display_init() {
 	NRF_SPI0->CONFIG=(0x03 << 1);
 	NRF_SPI0->EVENTS_READY=0;
 	NRF_SPI0->ENABLE=(SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
+    */
+
+    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+    spi_config.ss_pin= NRF_DRV_SPI_PIN_NOT_USED;
+    spi_config.miso_pin = LCD_MISO;
+    spi_config.mosi_pin = LCD_MOSI;
+    spi_config.sck_pin  = LCD_SCK;
+    spi_config.irq_priority  = APP_IRQ_PRIORITY_LOW;
+    spi_config.frequency  = NRF_DRV_SPI_FREQ_8M;
+    spi_config.bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST;
+    spi_config.mode=NRF_DRV_SPI_MODE_0;
+
+    nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL);
+	NRF_SPI0->CONFIG=(0x03 << 1);
+
+
+
 
     ///////////////////
 	// reset display //
@@ -98,10 +166,5 @@ void writesquare(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
     }
 }
 
-// placeholder for actual brightness control
-void display_backlight(char brightness) {
-    nrf_gpio_cfg_output(LCD_BACKLIGHT_HIGH);	
-    nrf_gpio_pin_write(LCD_BACKLIGHT_HIGH,0);
-}
 
 

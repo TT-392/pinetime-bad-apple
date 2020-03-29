@@ -6,7 +6,7 @@ SDK_ROOT := ../sdk
 PROJ_DIR := .
 
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := $(SDK_ROOT)/examples/peripheral/blinky/pca10040/blank/armgcc/blinky_gcc_nrf52.ld
+  LINKER_SCRIPT  := $(SDK_ROOT)/examples/peripheral/spi/pca10040/blank/armgcc/spi_gcc_nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \
@@ -29,32 +29,44 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spi.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
+  $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/modules/nrfx/mdk \
-  $(SDK_ROOT)/examples/peripheral/blinky/pca10040/blank/config/ \
+  $(SDK_ROOT)/components/libraries/scheduler \
   $(PROJ_DIR) \
+  $(PROJ_DIR)/external \
+  $(SDK_ROOT)/components/libraries/timer \
+  $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/libraries/util \
-  ./config \
   $(SDK_ROOT)/components/libraries/balloc \
   $(SDK_ROOT)/components/libraries/ringbuf \
   $(SDK_ROOT)/modules/nrfx/hal \
   $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/libraries/log \
+  $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/modules/nrfx \
   $(SDK_ROOT)/components/libraries/experimental_section_vars \
+  $(SDK_ROOT)/integration/nrfx/legacy \
   $(SDK_ROOT)/components/libraries/delay \
-  $(SDK_ROOT)/integration/nrfx \
+  $(SDK_ROOT)/external/segger_rtt \
+  $(SDK_ROOT)/components/libraries/atomic_fifo \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/libraries/atomic \
-  $(SDK_ROOT)/components/boards \
+  $(SDK_ROOT)/components/libraries/sortlist \
   $(SDK_ROOT)/components/libraries/memobj \
+  $(SDK_ROOT)/integration/nrfx \
+  $(SDK_ROOT)/modules/nrfx/drivers/include \
   $(SDK_ROOT)/external/fprintf \
   $(SDK_ROOT)/components/libraries/log/src \
+
 
 # Libraries common to all targets
 LIB_FILES += \
@@ -75,7 +87,7 @@ CFLAGS += -DNRF52832_XXAA
 CFLAGS += -DNRF52_PAN_74
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
-CFLAGS += -Wall -Werror
+CFLAGS += -Wall #-Werror
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing

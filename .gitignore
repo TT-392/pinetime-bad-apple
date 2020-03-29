@@ -1,3 +1,5 @@
 _build
 makeflash.sh
 tags
+.vimrc
+README.md
