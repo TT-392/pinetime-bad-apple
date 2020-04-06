@@ -5,13 +5,14 @@
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "display_defines.h"
+#include "display.h"
 
 
 #define SPI_INSTANCE  0 /**< SPI instance index. */
-static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
+static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(0);  /**< SPI instance. */
 static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
 
-// placeholder for actual brightness control
+// placeholder for actual brightness control see https://forum.pine64.org/showthread.php?tid=9378, pwm is planned
 void display_backlight(char brightness) {
     nrf_gpio_cfg_output(LCD_BACKLIGHT_HIGH);	
     if (brightness != 0) {
@@ -21,23 +22,17 @@ void display_backlight(char brightness) {
     }
 }
 
-int counter = 0;
+
+// handler that will be called when bytes are sent
 void spi_event_handler(nrf_drv_spi_evt_t const *p_event, void *p_context) {
     spi_xfer_done = true;
-  //  counter++;
-  //  if (counter > 1000) {
-  //  //    display_backlight(255);
-  //  }
-
 }
 
-
-uint8_t display_send(bool mode, uint8_t byte) {
+// send one byte over spi
+void display_send(bool mode, uint8_t byte) {
     nrf_gpio_pin_write(LCD_COMMAND,mode);
     spi_xfer_done = false;
-    uint8_t r = 4;
 
-    /**/
     uint8_t m_tx_buf[1];         
     m_tx_buf[0] = byte;
 
@@ -47,22 +42,22 @@ uint8_t display_send(bool mode, uint8_t byte) {
 
 
     while (!spi_xfer_done) {
-        __NOP();
+        __WFE();
     }
-    //nrf_delay_ms(10);
-    /**/
-
-
-    /*
-	NRF_SPI0->EVENTS_READY=0;           // ready
-	NRF_SPI0->TXD=byte;                 // out
-    while(NRF_SPI0->EVENTS_READY==0){;} // wait
-	r=NRF_SPI0->RXD;                    // in
-
-    nrf_delay_ms(1);
-	return (int)r;
-    */
 }
+
+// send a bunch of bytes from buffer
+void display_sendbuffer(bool mode, uint8_t* m_tx_buf, int m_length) {
+    nrf_gpio_pin_write(LCD_COMMAND,mode);
+    spi_xfer_done = false;
+
+    nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, NULL, 0);
+
+    while (!spi_xfer_done) {
+        __WFE();
+    }
+}
+
 
 void display_init() {
     ////////////////
@@ -84,19 +79,6 @@ void display_init() {
     ///////////////
     // spi setup //
     ///////////////
-    /*
-	NRF_SPI0->ENABLE=0;
-
-	NRF_SPI0->PSELSCK=LCD_SCK;
-	NRF_SPI0->PSELMOSI=LCD_MOSI;
-	NRF_SPI0->PSELMISO=LCD_MISO;
-	NRF_SPI0->FREQUENCY=SPI_FREQUENCY_FREQUENCY_M8;
-
-	NRF_SPI0->CONFIG=(0x03 << 1);
-	NRF_SPI0->EVENTS_READY=0;
-	NRF_SPI0->ENABLE=(SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
-    */
-
     nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
     spi_config.ss_pin= NRF_DRV_SPI_PIN_NOT_USED;
     spi_config.miso_pin = LCD_MISO;
@@ -105,12 +87,9 @@ void display_init() {
     spi_config.irq_priority  = APP_IRQ_PRIORITY_LOW;
     spi_config.frequency  = NRF_DRV_SPI_FREQ_8M;
     spi_config.bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST;
-    spi_config.mode=NRF_DRV_SPI_MODE_0;
+    spi_config.mode=NRF_DRV_SPI_MODE_3; // Trailing edge clock, active low
 
     nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL);
-	NRF_SPI0->CONFIG=(0x03 << 1);
-
-
 
 
     ///////////////////
@@ -119,13 +98,12 @@ void display_init() {
 	nrf_gpio_pin_write(LCD_RESET,0);
 	nrf_delay_ms(200);
 	nrf_gpio_pin_write(LCD_RESET,1);
-
-	// prepare to send some commands
+	nrf_delay_ms(200);
 	nrf_gpio_pin_write(LCD_SELECT,0);
+
 
     display_send (0, CMD_SWRESET);
     display_send (0, CMD_SLPOUT);
-    
     
     display_send (0, CMD_COLMOD);
     display_send (1, 0x55);
@@ -133,37 +111,61 @@ void display_init() {
 	display_send (0, CMD_MADCTL); 
     display_send (1, 0x00);
 
-	display_send (0, CMD_INVON); 
-	display_send (0, CMD_NORON); 
-	display_send (0, CMD_DISPON); 
+	display_send (0, CMD_INVON); // for standard 16 bit colors
+	display_send (0, CMD_NORON);
+	display_send (0, CMD_DISPON);
 }
 
 void writesquare(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color) {
+    /* set square to draw in */
     display_send (0, CMD_CASET);
-    
-    display_send(1,0);
-    display_send(1,x1);
+ 
+    display_send (1,0);
+    display_send (1,x1);
 
-    display_send(1,0);
-    display_send(1,x2);
+    display_send (1,0);
+    display_send (1,x2);
 
-    display_send(0,CMD_RASET);
+    display_send (0,CMD_RASET);
 
-    display_send(1,0);
-    display_send(1,y1);
+    display_send (1,0);
+    display_send (1,y1);
 
-    display_send(1,0);
-    display_send(1,y2);
+    display_send (1,0);
+    display_send (1,y2);
+    /**/
 
+    /* prepare to write pixels */
+    display_send (0,CMD_RAMWR);
+    nrf_gpio_pin_write(LCD_COMMAND,1);
+    /**/
 
-    display_send (0,CMD_RAMWR);  // write pixels
+    /* actually write the pixels */
+    int pixelcount = 125; // amount of pixels to send per packet (maximum of 255/2)
+    int screensize = (x2-x1+1)*(y2-y1+1);
+    int packetcount = screensize / pixelcount;
+    int overflow = screensize % pixelcount;
 
-    for (int x=0; x < (x2-x1); x++) {
-        for(int y=0;y< (y2-y1); y++) {
-            display_send(1,(color)>>8);
-            display_send(1,(color));
+    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
+        if (packet == packetcount)
+            pixelcount = overflow;
+
+        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+
+        int i = 0;
+        for (int pixel = 0; pixel < pixelcount; pixel++) {
+            m_tx_buf[i] = color >> 8;
+            i++;
+            m_tx_buf[i] = color;
+            i++;
         }
+
+        uint8_t m_length = sizeof(m_tx_buf); 
+
+
+        display_sendbuffer(1,m_tx_buf,m_length);
     }
+    /**/
 }
 
 

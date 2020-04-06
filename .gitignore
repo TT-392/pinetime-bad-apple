@@ -1,5 +1,5 @@
 _build
 makeflash.sh
-tags
-.vimrc
+src/tags
+src/.vimrc
 README.md
