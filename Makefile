@@ -4,9 +4,10 @@ OUTPUT_DIRECTORY := _build
 
 SDK_ROOT := ../sdk
 PROJ_DIR := ./src
+GNU_INSTALL_ROOT := /bin/
 
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := $(SDK_ROOT)/examples/peripheral/spi/pca10040/blank/armgcc/spi_gcc_nrf52.ld
+  LINKER_SCRIPT  := $(SDK_ROOT)/examples/ble_peripheral/ble_app_blinky/pca10040/s132/armgcc/ble_app_blinky_gcc_nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \

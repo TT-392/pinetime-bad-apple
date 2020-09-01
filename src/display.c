@@ -168,5 +168,128 @@ void writesquare(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
     /**/
 }
 
+void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame) {
+    /* set square to draw in */
+    display_send (0, CMD_CASET);
+ 
+    display_send (1,0);
+    display_send (1,x1);
 
+    display_send (1,0);
+    display_send (1,x2);
+
+    display_send (0,CMD_RASET);
+
+    display_send (1,0);
+    display_send (1,y1);
+
+    display_send (1,0);
+    display_send (1,y2);
+    /**/
+
+    /* prepare to write pixels */
+    display_send (0,CMD_RAMWR);
+    nrf_gpio_pin_write(LCD_COMMAND,1);
+    /**/
+
+    /* actually write the pixels */
+    int pixelcount = 125; // amount of pixels to send per packet (maximum of 255/2)
+    int screensize = (x2-x1+1)*(y2-y1+1);
+    int packetcount = screensize / pixelcount;
+    int overflow = screensize % pixelcount;
+
+    int pixelnumber = 0;
+    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
+        if (packet == packetcount)
+            pixelcount = overflow;
+
+        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+
+        int i = 0;
+        for (int pixel = 0; pixel < pixelcount; pixel++) {
+            uint16_t color;
+            if ((frame[pixelnumber / 8] >> (pixelnumber % 8)) & 1) {
+                color = 0x0;
+            } else {
+                color = 0xffff;
+            }
+
+            m_tx_buf[i] = color >> 8;
+            i++;
+            m_tx_buf[i] = color;
+            i++;
+            pixelnumber++;
+        }
+
+        uint8_t m_length = sizeof(m_tx_buf); 
+
+
+        display_sendbuffer(1,m_tx_buf,m_length);
+    }
+    /**/
+}
+
+#include "timecake/lcd_font.c"
+
+void drawChar (int x, int y, char character) {
+    /* set square to draw in */
+    display_send (0, CMD_CASET);
+ 
+    display_send (1,0);
+    display_send (1,x);
+
+    display_send (1,0);
+    display_send (1,x+8 - 1);
+
+    display_send (0,CMD_RASET);
+
+    display_send (1,0);
+    display_send (1,y);
+
+    display_send (1,0);
+    display_send (1,y+16 - 1);
+    /**/
+
+    /* prepare to write pixels */
+    display_send (0,CMD_RAMWR);
+    nrf_gpio_pin_write(LCD_COMMAND,1);
+    /**/
+
+    /* actually write the pixels */
+    int pixelcount = 8*16/2; // amount of pixels to send per packet (maximum of 255/2)
+    int screensize = 8*16;
+    int packetcount = screensize / pixelcount;
+    int overflow = screensize % pixelcount;
+
+    int pixelnumber = 0;
+    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
+        if (packet == packetcount)
+            pixelcount = overflow;
+
+        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+
+        int i = 0;
+        for (int pixel = 0; pixel < pixelcount; pixel++) {
+            uint16_t color;
+            if ((funfont_6x16r[((character - 32) * 6) + (pixelnumber % 8 - 1)] >> (16 - (pixelnumber / 8))) & 1) {
+                color = 0xffff;
+            } else {
+                color = 0x0;
+            }
+
+            m_tx_buf[i] = color >> 8;
+            i++;
+            m_tx_buf[i] = color;
+            i++;
+            pixelnumber++;
+        }
+
+        uint8_t m_length = sizeof(m_tx_buf); 
+
+
+        display_sendbuffer(1,m_tx_buf,m_length);
+    }
+
+    /**/
+}
 

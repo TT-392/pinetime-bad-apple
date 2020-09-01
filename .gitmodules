@@ -1,0 +1,3 @@
+[submodule "Adafruit_nRF52_nrfutil"]
+	path = Adafruit_nRF52_nrfutil
+	url = https://github.com/adafruit/Adafruit_nRF52_nrfutil.git
