@@ -271,7 +271,7 @@ void drawChar (int x, int y, char character) {
         int i = 0;
         for (int pixel = 0; pixel < pixelcount; pixel++) {
             uint16_t color;
-            if ((funfont_6x16r[((character - 32) * 6) + (pixelnumber % 8 - 1)] >> (16 - (pixelnumber / 8))) & 1) {
+            if ((funfont_6x16r[((character - 32) * 6) + (pixelnumber % 8 - 1)] >> (16 - (pixelnumber / 8))) & 1 && ((pixelnumber % 8) < 7 && (pixelnumber % 8) > 0)) {
                 color = 0xffff;
             } else {
                 color = 0x0;
