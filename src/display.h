@@ -16,8 +16,6 @@ void writesquare(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
 void display_backlight(char brightness);
 
 
-void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t *frame);
+void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t *frame, uint16_t posColor, uint16_t negColor);
 
-
-void drawChar (int x, int y, char character);
 

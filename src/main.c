@@ -5,6 +5,7 @@
 //#include "frame.h"
 
 #include "display.h"
+#include "display_print.c"
 #include "timecake/i2c_pine.h"
 
 
@@ -20,7 +21,7 @@ int main(void) {
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
 
-    drawChar (50, 50, 65);
+    drawChar (50, 50, 'A', 0xffff, 0x1A9F);
     writesquare(50+8, 50, 50+8+7, 50+15, 0x1A9F);
 
     writesquare(90, 90, 90, 90, 0x1A9F);
