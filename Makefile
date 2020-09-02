@@ -30,12 +30,16 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/display.c \
+  $(PROJ_DIR)/display_print.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
 
+#  $(PROJ_DIR)/timecake/clock.h \
+#  $(PROJ_DIR)/timecake/time.h \
+#  $(PROJ_DIR)/timecake/saveram.h \
 # Include folders common to all targets
 INC_FOLDERS += \
   $(SDK_ROOT)/components \

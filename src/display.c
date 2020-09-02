@@ -209,9 +209,9 @@ void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, ui
         for (int pixel = 0; pixel < pixelcount; pixel++) {
             uint16_t color;
             if ((frame[pixelnumber / 8] >> (pixelnumber % 8)) & 1) {
-                color = negColor;
-            } else {
                 color = posColor;
+            } else {
+                color = negColor;
             }
 
             m_tx_buf[i] = color >> 8;
