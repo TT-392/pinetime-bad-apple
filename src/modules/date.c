@@ -1,5 +1,4 @@
 #include "../display_print.h"
-#include <math.h>
 #include "../calctime.c"
 #include "../timecake/clock_pine.c"
 

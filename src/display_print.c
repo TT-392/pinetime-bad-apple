@@ -2,6 +2,7 @@
 #include "timecake/lcd_font.c"
 #include "display.h"
 #include "display_print.h"
+#include <math.h>
 
 void drawChar (int x, int y, char character, uint16_t color_text, uint16_t color_bg) {
 
@@ -33,5 +34,18 @@ void drawString (int x, int y, char* text, uint16_t color_text, uint16_t color_b
             drawChar (x + i*8, y, text[i], color_text, color_bg);
             i++;
         }
+    }
+}
+
+void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_bg, int clearLength) {
+    int i = 0;
+    while (number > 0) {
+        drawChar (x - i*8, y, number % 10 + 48, color_text, color_bg);
+        number /= 10;
+        i++;
+    }
+    while (clearLength > i) {
+        drawChar (x - i*8, y, 32, color_text, color_bg);
+        i++;
     }
 }
