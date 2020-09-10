@@ -49,3 +49,21 @@ void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_b
         i++;
     }
 }
+
+void drawSelection (int x, int y, char* text, uint16_t color_text, uint16_t color_bg, int selection, _Bool vertical) {
+    _Bool terminated = 0;
+    int i = 0;
+
+    while (!terminated) {
+        if (text[i] == '\0') {
+            terminated = 1;
+        } else {
+            if (i == selection) {
+                drawChar (x + i*8*!vertical, y + 16*i*vertical, text[i], color_bg, color_text);
+            } else {
+                drawChar (x + i*8*!vertical, y + 16*i*vertical, text[i], color_text, color_bg);
+            }
+            i++;
+        }
+    }
+}
