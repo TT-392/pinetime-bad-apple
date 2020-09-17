@@ -1,6 +1,6 @@
 #include "../display_print.h"
 #include "../calctime.c"
-#include "../timecake/clock_pine.c"
+#include "../external/timecake/clock_pine.c"
 
 void date_init() {
     clock_setup();

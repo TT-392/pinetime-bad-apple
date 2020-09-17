@@ -4,7 +4,6 @@
 //#include "nrf_sdh.h"
 #include "wdt.c"
 
-#include "wdt.h"
 //#include "frame.h"
 
 #include "display.h"
@@ -12,11 +11,11 @@
 //#include "timecake/i2c_pine.h"
 //#include "timecake/heart_pine.c"
 //#include "timecake/clock_pine.c"
-#include "modules/steamLocomotive.c"
+//#include "modules/steamLocomotive.c"
 //#include "modules/battery.c"
 //#include "modules/date.c"
-//#include "modules/keyboard.c"
-#include "modules/heart.c"
+#include "modules/keyboard.c"
+//#include "modules/heart.c"
 //#include "display_print.h"
 
 //#include "nrf_drv_gpiote.h"
@@ -47,7 +46,7 @@ int main(void) {
 //    drawmono(0, 0, 239, 239, frame);
 
     writesquare(0, 0, 240, 240, 0x0);
-    heart_init();
+    //heart_init();
    // battery_init();
    // battery_percent (200, 0, 0xffff, 0x0000);
 //    for (int i = 0; i < 240; i++) {
@@ -55,12 +54,12 @@ int main(void) {
 //        writesquare(240-i, i, 240-i, i, 0xffff);
 //    }
 
-//    keyboard_init();
+    keyboard_init();
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
 
-//    sl(40, 90, 0xffff, 0x0000);
+    //sl(40, 90, 0xffff, 0x0000);
    // battery_init();
     //date_init();
 
@@ -77,10 +76,11 @@ int main(void) {
     bool backlight = 1;
     bool lastButState = 0;
     while(osRunning) {
+       // heart_loop();
         wdt_feed();
 
 
-//        keyboard_loop();
+        keyboard_loop();
         //drawDate("%Y-%m-%d  %H:%M:%S");
 
     //    battery_percent (200, 0, 0xffff, 0x0000);
@@ -92,13 +92,6 @@ int main(void) {
 
         if (nrf_gpio_pin_read(13)) {
             osRunning = 0;
-            if (!lastButState)
-                backlight = !backlight;
-            //display_backlight(backlight);
-
-            lastButState = 1;
-        } else {
-            lastButState = 0;
         }
 
        // if (toggle) {
@@ -106,13 +99,15 @@ int main(void) {
        // } else {
        //     writesquare(0, 0, 20, 20, 0xFFFF);
        // }
-        //        if (!nrf_gpio_pin_read(19)) {
-        //            writesquare(20, 20, 40, 40, 0x1A9F);
-        //        } else {
-        //            writesquare(20, 20, 40, 40, 0xFFFF);
-        //        }
-        //
-        //
+        if (!nrf_gpio_pin_read(19)) {
+            writesquare(220, 220, 240, 240, 0x1A9F);
+    //        display_backlight(0);
+        } else {
+            writesquare(220, 220, 240, 240, 0xFFFF);
+            display_backlight(255);
+        }
+        
+        
 
 
     }
