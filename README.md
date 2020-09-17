@@ -1,5 +1,5 @@
-# pinetime_display
-This project provides some functions to write a square to the display using fast direct memory access spi functions
+# TT-time
+This is the start of a project for the pinetime
 
 ## compiling
 (this part needs some work)
