@@ -75,6 +75,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spi.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
+  $(PROJ_DIR)/external/infinitime/i2c_pine.c \
 
 
 # Include folders common to all targets
@@ -211,6 +212,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/stack_guard \
   $(SDK_ROOT)/components/libraries/log/src \
   $(PROJ_DIR)/external/nordic \
+  $(PROJ_DIR)/external/timecake \
+  $(PROJ_DIR)/external/infinitime\
 
 # Libraries common to all targets
 LIB_FILES += \

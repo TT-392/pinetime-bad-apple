@@ -1,3 +1,4 @@
+// this file is ported to C from the infinitime driver
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
@@ -39,13 +40,32 @@ void i2c_setup() {
     NRF_TWIM1->EVENTS_TXSTARTED = 0;
 
     NRF_TWIM1->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
+}
 
+// fix i2c when it gets stuck
+void i2c_fix() {
+    // disable i2c
+    uint32_t twi_state = NRF_TWI1->ENABLE;
+    NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
+
+    NRF_GPIO->PIN_CNF[PIN_SCL] = ((uint32_t)GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+    NRF_GPIO->PIN_CNF[PIN_SDA] = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
+        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+    NRF_TWIM1->ENABLE = twi_state;
 }
 
 
-
 int Read(uint8_t deviceAddress, uint8_t *buffer, size_t size, bool stop) {
-    //NRF_TWIM1->ADDRESS = deviceAddress;
+    NRF_TWIM1->ADDRESS = deviceAddress;
     NRF_TWIM1->TASKS_RESUME = 0x1UL;
     NRF_TWIM1->RXD.PTR = (uint32_t)buffer;
     NRF_TWIM1->RXD.MAXCNT = size;
@@ -140,6 +160,9 @@ int i2c_read(uint8_t deviceAddress, uint8_t registerAddress, size_t size, uint8_
     error = i2c_write(deviceAddress, &registerAddress, 1, false);
     if (error == 0) {
         error = Read(deviceAddress, data, size, true);
+    }
+    if (error) {
+        i2c_fix();
     }
     return error;
 }

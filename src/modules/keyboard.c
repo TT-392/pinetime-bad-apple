@@ -1,5 +1,5 @@
 #include "../display_print.h"
-#include "../external/infinitime/i2c_pine.c"
+#include "../external/infinitime/i2c_pine.h"
 
 #define TOUCH_I2C_DEVICE (0x15)
 
@@ -36,10 +36,10 @@ void keyboard_init() {
     nrf_gpio_pin_write(10,1);
     nrf_delay_ms(50);
 
-    uint8_t dummy = 0;
-    i2c_read(TOUCH_I2C_DEVICE, 0x15, 1, &dummy);
-    nrf_delay_ms(5);
-    i2c_read(TOUCH_I2C_DEVICE, 0xa7, 1, &dummy);
+//    uint8_t dummy = 0;
+//    i2c_read(TOUCH_I2C_DEVICE, 0x15, 1, &dummy);
+//    nrf_delay_ms(5);
+//    i2c_read(TOUCH_I2C_DEVICE, 0xa7, 1, &dummy);
 
 }
 
@@ -48,7 +48,6 @@ void keyboard_loop() {
 
     int error = i2c_read(TOUCH_I2C_DEVICE, 0x00, 63, touch_data);
     if (error) {
-        i2c_setup();
 
 
         drawNumber(150,50,error,0x0000,0x07E2,1);

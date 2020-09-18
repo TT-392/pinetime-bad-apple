@@ -1,3 +1,5 @@
+#pragma once
+
 void i2c_setup(void);
 
 int i2c_write(uint8_t deviceAddress, const uint8_t *data, size_t size, bool stop);

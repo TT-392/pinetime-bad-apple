@@ -48,6 +48,9 @@ void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_b
         drawChar (x - i*8, y, 32, color_text, color_bg);
         i++;
     }
+    if (number == 0) {
+        drawChar (x, y, 48, color_text, color_bg);
+    }
 }
 
 void drawSelection (int x, int y, char* text, uint16_t color_text, uint16_t color_bg, int selection, _Bool vertical) {

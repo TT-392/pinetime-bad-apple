@@ -1,24 +1,12 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
-//#include "nrf_sdh.h"
 #include "wdt.c"
 
-//#include "frame.h"
-
 #include "display.h"
-//#include "display_print.c"
-//#include "timecake/i2c_pine.h"
-//#include "timecake/heart_pine.c"
-//#include "timecake/clock_pine.c"
-//#include "modules/steamLocomotive.c"
-//#include "modules/battery.c"
-//#include "modules/date.c"
+#include "touch.c"
+#include "modules/steamLocomotive.c"
 #include "modules/keyboard.c"
-//#include "modules/heart.c"
-//#include "display_print.h"
-
-//#include "nrf_drv_gpiote.h"
 
 
 _Bool toggle = 0;
@@ -54,7 +42,9 @@ int main(void) {
 //        writesquare(240-i, i, 240-i, i, 0xffff);
 //    }
 
-    keyboard_init();
+//    keyboard_init();
+
+    touch_init();
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
@@ -75,19 +65,40 @@ int main(void) {
 
     bool backlight = 1;
     bool lastButState = 0;
+    int swipeUp = 0;
     while(osRunning) {
        // heart_loop();
         wdt_feed();
 
 
-        keyboard_loop();
+//        keyboard_loop();
         //drawDate("%Y-%m-%d  %H:%M:%S");
 
     //    battery_percent (200, 0, 0xffff, 0x0000);
 
+        uint8_t touch_data[8] = {};
+        struct touchPoints touchPoint = {};
+        int returnvalue = touch_refresh(&touchPoint, touch_data);
+
+        
+        drawNumber(8*3,0*16,touchPoint.touchX,0xffff,0x0000,3);
+        drawNumber(8*3,1*16,touchPoint.touchY,0xffff,0x0000,3);
+        drawNumber(8*3,2*16,touchPoint.event,0xffff,0x0000,3);
+        drawNumber(8*3,3*16,touchPoint.gesture,0xffff,0x0000,3);
+        drawNumber(8*3,4*16,touchPoint.pressure,0xffff,0x0000,3);
+        drawNumber(8*3,5*16,returnvalue,0xffff,0x0000,3);
+
+        for (int i = 0; i < 8; i++) {
+            if (touch_data[i] != 0)
+                drawNumber(8*9,i*16,touch_data[i],0xffff,0x0000,3);
+        }
 
 
-
+        if (touch_data[1] == 2) {
+            writesquare(0, 0, 240, 240, 0xffff);
+        } else {
+            swipeUp = 0;
+        }
 
 
         if (nrf_gpio_pin_read(13)) {
