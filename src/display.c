@@ -116,23 +116,23 @@ void display_init() {
 	display_send (0, CMD_DISPON);
 }
 
-void writesquare(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color) {
+void writesquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
     /* set square to draw in */
     display_send (0, CMD_CASET);
  
-    display_send (1,0);
-    display_send (1,x1);
+    display_send (1,x1 >> 8);
+    display_send (1,x1 & 0xff);
 
-    display_send (1,0);
-    display_send (1,x2);
+    display_send (1,x2 >> 8);
+    display_send (1,x2 & 0xff);
 
     display_send (0,CMD_RASET);
 
-    display_send (1,0);
-    display_send (1,y1);
+    display_send (1,y1 >> 8);
+    display_send (1,y1 & 0xff);
 
-    display_send (1,0);
-    display_send (1,y2);
+    display_send (1,y2 >> 8);
+    display_send (1,y2 & 0xff);
     /**/
 
     /* prepare to write pixels */
@@ -229,3 +229,86 @@ void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, ui
     /**/
 }
 
+void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {
+    /* set square to draw in */
+    display_send (0, CMD_VSCRDEF);
+ 
+    display_send (1,TFA >> 8);
+    display_send (1,TFA & 0xff);
+
+    display_send (1,VSA >> 8);
+    display_send (1,VSA & 0xff);
+
+    display_send (1,BFA >> 8);
+    display_send (1,BFA & 0xff);
+
+    display_send (0, CMD_MADCTL);
+    display_send (1,0/*0x10*/);
+
+
+    display_send (0,CMD_VSCSAD);
+
+    display_send (1,scroll_value >> 8);
+    display_send (1,scroll_value & 0xff);
+
+    /**/
+
+}
+
+void tempFunction() {
+    uint16_t x1 = 0;
+    uint16_t y1 = 240-80;
+    uint16_t x2 = 240;
+    uint16_t y2 = 240;
+    uint16_t color = 0x0000;
+    /* set square to draw in */
+    display_send (0, CMD_CASET);
+ 
+    display_send (1,x1 >> 8);
+    display_send (1,x1 & 0xff);
+
+    display_send (1,x2 >> 8);
+    display_send (1,x2 & 0xff);
+
+    display_send (0,CMD_RASET);
+
+    display_send (1,y1 >> 8);
+    display_send (1,y1 & 0xff);
+
+    display_send (1,y2 >> 8);
+    display_send (1,y2 & 0xff);
+    /**/
+
+    /* prepare to write pixels */
+    display_send (0,CMD_RAMWR);
+    nrf_gpio_pin_write(LCD_COMMAND,1);
+    /**/
+
+    /* actually write the pixels */
+    int pixelcount = 125; // amount of pixels to send per packet (maximum of 255/2)
+    int screensize = (x2-x1+1)*(y2-y1+1);
+    int packetcount = screensize / pixelcount;
+    int overflow = screensize % pixelcount;
+
+    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
+        if (packet == packetcount)
+            pixelcount = overflow;
+
+        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+
+        int i = 0;
+        for (int pixel = 0; pixel < pixelcount; pixel++) {
+            color = ((pixel / 240) + 80)*6;
+            m_tx_buf[i] = color >> 8;
+            i++;
+            m_tx_buf[i] = color;
+            i++;
+        }
+
+        uint8_t m_length = sizeof(m_tx_buf); 
+
+
+        display_sendbuffer(1,m_tx_buf,m_length);
+    }
+    /**/
+}

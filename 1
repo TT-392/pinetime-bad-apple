@@ -32,9 +32,9 @@ int main(void) {
     display_backlight(255);
     display_init();
 
-    writesquare(0, 0, 240, 320, 0xf800);
     drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
 
+//    writesquare(0, 0, 240, 240, 0x0);
     //heart_init();
    // battery_init();
    // battery_percent (200, 0, 0xffff, 0x0000);
@@ -79,58 +79,10 @@ int main(void) {
 
     //    battery_percent (200, 0, 0xffff, 0x0000);
 
-    //    if (i < 80) {
-    //        writesquare(0, 320-i, 240, 320-i, i*6);
-    //        scroll(320-i, i, 0, 0);
-    //    } else if (i < 160) {
-    //        writesquare(0, 320-(i-80), 240, 320-(i-80), i*6);
-    //        scroll(320-i, i, 0, 320-80);
-    //    }
-    //    if (i == 80) {
-    //        scroll(0,0,320,0);
-    //    }
-       // if (i < 80) {
-       //     writesquare(0, 320-i, 240, 320-i, i*6);
-       //     scroll((i+80), 320-(i+80), 320, 80);
-       // }
-
-
-    //    if (i < 80) {
-     //       writesquare(0, 240+i, 240, 240+i, i*6); // write to D
-     //       writesquare(0, 240-i, 240, 240-i, (80-i)*6); //write to C
-            scroll(240-i,i+80,0,240); // roll D to C
-    //    } else if (i < 160) {
-    //        int j = i-80;
-    //        writesquare(0, 240+j, 240, 240+j, i*6); // write to D
-    //        writesquare(0, 240-i, 240, 240-i, (160-i)*6); // write to B
-    //        scroll(240-80-j,j+160,0,240-80);
-    //    } else if (i == 160) {
-    //        scroll(240-80, 80, 80, 320);
-    //        tempFunction();
-    //        for (int x = 0; x < 80; x++) {
-    //            writesquare(0, 240-80+x, 240, 240-80+x, (80+x)*6); //write to C
-    //        }
-    //    } else if (i < 240) {
-    //        int j = i-160;
-    //        writesquare(0, 240+j, 240, 240+j, i*6); // write to D
-    //        scroll(240-160-j,j+240,0,240-160);
-    //    }
-            
-
-    //    writesquare(0, i, 240, i, (80-i)*6);
-
-       // if (i > 80) {
-       //     int j = i - 80;
-       //     scroll(320-j, j, (j > 80) ? j - 80 : 0, 320 - 80);
-       // }
-
-        nrf_delay_ms(5);
+        scroll(0, 320, 0, i);
+        nrf_delay_ms(1);
         i++;
-        if (i > 320) { 
-            i = 0;
-            drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
-            scroll(320,0,0,0);
-        }
+        if (i > 320) i = 0;
        // uint8_t touch_data[8] = {};
        // struct touchPoints touchPoint = {};
        // int returnvalue = touch_refresh(&touchPoint, touch_data);
@@ -165,13 +117,13 @@ int main(void) {
        // } else {
        //     writesquare(0, 0, 20, 20, 0xFFFF);
        // }
-//        if (!nrf_gpio_pin_read(19)) {
-//            writesquare(220, 220, 240, 240, 0x1A9F);
-//    //        display_backlight(0);
-//        } else {
-//            writesquare(220, 220, 240, 240, 0xFFFF);
-//            display_backlight(255);
-//        }
+        if (!nrf_gpio_pin_read(19)) {
+            writesquare(220, 220, 240, 240, 0x1A9F);
+    //        display_backlight(0);
+        } else {
+            writesquare(220, 220, 240, 240, 0xFFFF);
+            display_backlight(255);
+        }
         
         
 
