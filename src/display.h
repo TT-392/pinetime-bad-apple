@@ -23,3 +23,5 @@ void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
 
 void tempFunction();
 
+void partialMode(uint16_t PSL, uint16_t PEL);
+

@@ -243,7 +243,7 @@ void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {
     display_send (1,BFA & 0xff);
 
     display_send (0, CMD_MADCTL);
-    display_send (1,0/*0x10*/);
+    display_send (1, 0x0/*0x10*/);
 
 
     display_send (0,CMD_VSCSAD);
@@ -252,6 +252,21 @@ void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {
     display_send (1,scroll_value & 0xff);
 
     /**/
+}
+
+void partialMode(uint16_t PSL, uint16_t PEL) {
+    display_send (0, CMD_MADCTL);
+    display_send (1, 0x0/*0x10*/);
+
+    display_send (0, CMD_PTLAR);
+ 
+    display_send (1,PSL >> 8);
+    display_send (1,PSL & 0xff);
+
+    display_send (1,PEL >> 8);
+    display_send (1,PEL & 0xff);
+
+    display_send (0, CMD_PTLON);
 
 }
 
@@ -312,3 +327,6 @@ void tempFunction() {
     }
     /**/
 }
+
+
+
