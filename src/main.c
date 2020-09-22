@@ -1,12 +1,12 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
-#include "wdt.c"
 
+#include "wdt.c"
 #include "display.h"
-#include "touch.c"
+//#include "touch.c"
 #include "modules/steamLocomotive.c"
-#include "modules/keyboard.c"
+//#include "modules/keyboard.c"
 #include "frame.c"
 
 
@@ -47,7 +47,7 @@ int main(void) {
 
 //    keyboard_init();
 
-    touch_init();
+ //   touch_init();
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
@@ -97,54 +97,54 @@ int main(void) {
        // }
 
 
-//#define scrollup
-#ifdef scrollup
-        
-        if (i < 80) {
-            writesquare(0, 239+i, 239, 239+i, (i+80)*200); // write to D
-            writesquare(0, 239-i, 239, 239-i, (160-i)*200); //write to C
-            scroll(239-i,80+i,0,240); // roll D to C
-        } else if (i < 160) {
-            int j = i-80;
-            writesquare(0, 239+j, 239, 239+j, (i+80)*200); // write to D
-            writesquare(0, 239-i, 239, 239-i, (240-i)*200); //write to C
-            scroll(239-80-j,j+160,0,240-80);
-        } else if (i == 160) {
-            scroll(239-79, 80, 80, 320);
-            tempFunction();
-            for (int x = 0; x < 80; x++) {
-                writesquare(0, 239-80+x, 239, 239-80+x, (160+x)*200); //write to C
-            }
-        } else if (i < 240) {
-            int j = i-160;
-            writesquare(0, 239+j, 239, 240+j, (i+80)*200); // write to D
-            scroll(239-160-j,j+239,0,240-160);
-        }
-#endif
-            
-#ifndef scrollup
-        if (i < 80) {
-            writesquare(0, 239+i, 239, 239+i, (i+80)*200); // write to D
-            writesquare(0, 239-i, 239, 239-i, (160-i)*200); //write to C
-            scroll(239-i,80+i,0,240); // roll D to C
-        } else if (i < 160) {
-            int j = i-80;
-            writesquare(0, 239+j, 239, 239+j, (i+80)*200); // write to D
-            writesquare(0, 239-i, 239, 239-i, (240-i)*200); //write to C
-            scroll(239-80-j,j+160,0,240-80);
-        } else if (i == 160) {
-            scroll(239-79, 80, 80, 320);
-            tempFunction();
-            for (int x = 0; x < 80; x++) {
-                writesquare(0, 239-80+x, 239, 239-80+x, (160+x)*200); //write to C
-            }
-        } else if (i < 241) {
-            int j = i-160;
-            writesquare(0, 320-j, 239, 320-j, (80-j)*200); // write to D
-            writesquare(0, 320-j, 239, 320-j, (80-j)*200); // write to D
-            scroll(0, j, 320-j, 320);
-        }
-#endif
+////#define scrollup
+//#ifdef scrollup
+//        
+//        if (i < 80) {
+//            writesquare(0, 239+i, 239, 239+i, (i+80)*200); // write to D
+//            writesquare(0, 239-i, 239, 239-i, (160-i)*200); //write to C
+//            scroll(239-i,80+i,0,240); // roll D to C
+//        } else if (i < 160) {
+//            int j = i-80;
+//            writesquare(0, 239+j, 239, 239+j, (i+80)*200); // write to D
+//            writesquare(0, 239-i, 239, 239-i, (240-i)*200); //write to C
+//            scroll(239-80-j,j+160,0,240-80);
+//        } else if (i == 160) {
+//            scroll(239-79, 80, 80, 320);
+//            tempFunction();
+//            for (int x = 0; x < 80; x++) {
+//                writesquare(0, 239-80+x, 239, 239-80+x, (160+x)*200); //write to C
+//            }
+//        } else if (i < 240) {
+//            int j = i-160;
+//            writesquare(0, 239+j, 239, 240+j, (i+80)*200); // write to D
+//            scroll(239-160-j,j+239,0,240-160);
+//        }
+//#endif
+//            
+//#ifndef scrollup
+//        if (i < 80) {
+//            writesquare(0, 239+i, 239, 239+i, (i+80)*200); // write to D
+//            writesquare(0, 239-i, 239, 239-i, (160-i)*200); //write to C
+//            scroll(239-i,80+i,0,240); // roll D to C
+//        } else if (i < 160) {
+//            int j = i-80;
+//            writesquare(0, 239+j, 239, 239+j, (i+80)*200); // write to D
+//            writesquare(0, 239-i, 239, 239-i, (240-i)*200); //write to C
+//            scroll(239-80-j,j+160,0,240-80);
+//        } else if (i == 160) {
+//            scroll(239-79, 80, 80, 320);
+//            tempFunction();
+//            for (int x = 0; x < 80; x++) {
+//                writesquare(0, 239-80+x, 239, 239-80+x, (160+x)*200); //write to C
+//            }
+//        } else if (i < 241) {
+//            int j = i-160;
+//            writesquare(0, 320-j, 239, 320-j, (80-j)*200); // write to D
+//            writesquare(0, 320-j, 239, 320-j, (80-j)*200); // write to D
+//            scroll(0, j, 320-j, 320);
+//        }
+//#endif
 
 
 
@@ -157,14 +157,15 @@ int main(void) {
        //     scroll(320-j, j, (j > 80) ? j - 80 : 0, 320 - 80);
        // }
 
-        nrf_delay_ms(1);
+        scroll(0, 400, 0, i);
+        nrf_delay_ms(5);
         i++;
-        if (i > 320) { 
+        if (i > 400) { 
             i = 0;
-            nrf_delay_ms(1000);
-            drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
-            scroll(320,0,0,0);
-            nrf_delay_ms(500);
+//            nrf_delay_ms(1000);
+//            drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
+//            scroll(320,0,0,0);
+//            nrf_delay_ms(500);
         }
        // uint8_t touch_data[8] = {};
        // struct touchPoints touchPoint = {};

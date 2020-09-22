@@ -1,6 +1,6 @@
 #include "nrf.h"
-#include "nrf_log.h"
-#include "nrf_log_default_backends.h"
+//#include "nrf_log.h"
+//#include "nrf_log_default_backends.h"
 #include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"

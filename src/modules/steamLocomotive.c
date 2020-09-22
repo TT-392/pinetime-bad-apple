@@ -1,6 +1,6 @@
 #include "../display_print.h"
 
-void sl(int x, int y, uint16_t color_text, uint16_t color_bg) {
+void sl_static(int x, int y, uint16_t color_text, uint16_t color_bg) {
     char* train[6] = {
     "      ++      +------", 
     "      ||      |+-+ | ",
