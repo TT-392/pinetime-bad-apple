@@ -7,7 +7,7 @@ PROJ_DIR := ./src
 GNU_INSTALL_ROOT := /bin/
 
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := $(SDK_ROOT)/examples/ble_central/ble_app_blinky_c/pca10040/s132/armgcc/ble_app_blinky_c_gcc_nrf52.ld
+  LINKER_SCRIPT  := $(PROJ_DIR)/external/nordic/ble_app_blinky_c_gcc_nrf52.ld
 
 
 
