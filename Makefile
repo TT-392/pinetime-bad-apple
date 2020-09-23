@@ -78,6 +78,7 @@ SRC_FILES += \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
   $(PROJ_DIR)/external/infinitime/i2c_pine.c \
+  $(PROJ_DIR)/modules/steamLocomotive.c \
 
 
 # Include folders common to all targets
@@ -216,6 +217,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/external/nordic \
   $(PROJ_DIR)/external/timecake \
   $(PROJ_DIR)/external/infinitime\
+  $(PROJ_DIR)/modules\
 
 # Libraries common to all targets
 LIB_FILES += \

@@ -1,6 +1,9 @@
-#include "../display_print.h"
-
+#include "nrf_clock.h"
+#include "nrf_timer.h"
+#include "steamLocomotive.h"
 volatile bool sl_nextFrameReady = 1;
+
+#include "../display_print.h"
 
 void TIMER0_IRQHandler(void) {
     sl_nextFrameReady = 1;

@@ -4,11 +4,10 @@
 #include "nrf_clock.h"
 #include "nrf_timer.h"
 
-
 #include "wdt.c"
 #include "display.h"
 //#include "touch.c"
-#include "modules/steamLocomotive.c"
+#include "steamLocomotive.h"
 #include "modules/battery.c"
 //#include "modules/keyboard.c"
 #include "frame.c"
