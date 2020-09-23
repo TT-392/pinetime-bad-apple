@@ -1,6 +1,7 @@
 _build
 makeflash.sh
 makeflash_ble.sh
+makeflash_manual.sh
 src/tags
 src/.vimrc
 notes

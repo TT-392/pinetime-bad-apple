@@ -9,6 +9,7 @@
 #include "display.h"
 //#include "touch.c"
 #include "modules/steamLocomotive.c"
+#include "modules/battery.c"
 //#include "modules/keyboard.c"
 #include "frame.c"
 
@@ -42,6 +43,7 @@ int main(void) {
 
 
 
+    battery_init();
 
 
 
@@ -62,10 +64,11 @@ int main(void) {
 ///    drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
 
 
-    nrf_delay_ms(2000);
     
  //       writesquare(0, 0, 240, 240, 0xffff);
     writesquare(0, 0, 240, 240, 0x0000);
+
+    nrf_delay_ms(2000);
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
@@ -79,6 +82,7 @@ int main(void) {
     int lastTime = 0;
     int i = 0;
     while(osRunning) {
+        battery_percent(200,0,0xffff,0x0000);
        // heart_loop();
         wdt_feed();
 
@@ -91,11 +95,6 @@ int main(void) {
             sl(65,i,0xffff,0x0000);
             lastTime = time;
         }
-
-
-
-
-
 
 
 

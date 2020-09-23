@@ -10,6 +10,7 @@ void battery_init () {
     float voltage;
 
     battery_read(&flags, &voltage, &filteredPercentage);
+    battery_read(&flags, &voltage, &filteredPercentage);
 }
 
 void battery_percent (int x, int y, uint16_t color_text, uint16_t color_bg) {
