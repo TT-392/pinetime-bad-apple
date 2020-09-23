@@ -16,36 +16,12 @@
 _Bool toggle = 0;
 
 int time = 1;
-void TIMER0_IRQHandler(void) {
-//    display_backlight(255*toggle);
-    time++;
-
-    nrf_timer_event_clear(NRF_TIMER0, NRF_TIMER_EVENT_COMPARE0);
-    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_CLEAR);
-}
 
 
 
 int main(void) {
-    // Irq setup
-    NVIC_SetPriority(TIMER0_IRQn, 15); // Lowes priority
-    NVIC_ClearPendingIRQ(TIMER0_IRQn);
-    NVIC_EnableIRQ(TIMER0_IRQn);
-
-
-    nrf_timer_mode_set(NRF_TIMER0,NRF_TIMER_MODE_TIMER);
-    nrf_timer_bit_width_set(NRF_TIMER0, NRF_TIMER_BIT_WIDTH_32);
-    nrf_timer_frequency_set(NRF_TIMER0, NRF_TIMER_FREQ_1MHz);
-    nrf_timer_cc_write(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0, 1000000/8);
-
-    nrf_timer_int_enable(NRF_TIMER0,NRF_TIMER_INT_COMPARE0_MASK );
-    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_START);
-
-
 
     battery_init();
-
-
 
     bool osRunning = 1;
 
@@ -81,21 +57,25 @@ int main(void) {
 
     int lastTime = 0;
     int i = 0;
+
+    bool running = 1;
+    while (running) {
+        wdt_feed();
+        if (sl_nextFrameReady) {
+            running = !sl(65, 0xffff, 0x0000);
+        }
+    }
+
+
     while(osRunning) {
         battery_percent(200,0,0xffff,0x0000);
        // heart_loop();
         wdt_feed();
 
-//        sl_static(40, 90, 0xffff, 0x0000);
-        if (lastTime != time) {
-            i++;
-            if (i >= (30+22)) { 
-                i = 0;
-            }
-            sl(65,i,0xffff,0x0000);
-            lastTime = time;
-        }
 
+        if (sl_nextFrameReady) {
+           sl(65, 0xffff, 0x0000);
+        }
 
 
         nrf_delay_us(1);
