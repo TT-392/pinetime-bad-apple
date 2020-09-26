@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 
+#pragma once
   
 #define LCD_SCK             2
 #define LCD_MOSI            3

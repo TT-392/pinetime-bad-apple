@@ -1,5 +1,5 @@
 # TT-time
-This is the start of a project for the pinetime
+This is the start of a project for the pinetime. Some day it might be a nice usable smartwatch os, but right now, it is starting to look more and more like a fancy tech demo.
 
 ## compiling
 (this part needs some work)
