@@ -21,7 +21,6 @@ void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t *frame, ui
 void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
 
 
-void tempFunction();
 
 void partialMode(uint16_t PSL, uint16_t PEL);
 

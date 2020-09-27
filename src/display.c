@@ -48,7 +48,6 @@ void display_send(bool mode, uint8_t byte) {
 
 // send a bunch of bytes from buffer
 void display_sendbuffer(bool mode, uint8_t* m_tx_buf, int m_length) {
-    nrf_gpio_pin_write(LCD_COMMAND,mode);
     spi_xfer_done = false;
 
     nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, NULL, 0);
@@ -58,6 +57,16 @@ void display_sendbuffer(bool mode, uint8_t* m_tx_buf, int m_length) {
     }
 }
 
+// send a bunch of bytes from buffer
+void display_sendbuffer_noblock(uint8_t* m_tx_buf, int m_length) {
+    spi_xfer_done = false;
+
+    nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, NULL, 0);
+
+}
+
+#define ppi_set() NRF_PPI->CHENSET = 0xff; // enable first 8 ppi channels
+#define ppi_clr() NRF_PPI->CHENCLR = 0xff; // disable first 8 ppi channels
 
 void display_init() {
     ////////////////
@@ -114,58 +123,122 @@ void display_init() {
 	display_send (0, CMD_INVON); // for standard 16 bit colors
 	display_send (0, CMD_NORON);
 	display_send (0, CMD_DISPON);
+
+
+    ///////////////////////////
+	// setup LCD_COMMAND PIN //
+    ///////////////////////////
+    nrf_gpio_cfg_output(LCD_COMMAND);
+
+
+    NRF_TIMER3->MODE = 0 << TIMER_MODE_MODE_Pos; // timer mode
+    NRF_TIMER3->BITMODE = 0 << TIMER_BITMODE_BITMODE_Pos; // 16 bit
+    NRF_TIMER3->PRESCALER = 0 << TIMER_PRESCALER_PRESCALER_Pos; // 16 MHz
+
+    // the following CC setup will cause byte 0, 5 and 10 
+    // of any SPIM0 dma transfer to be treated as CMD bytes
+    NRF_TIMER3->CC[0] = 5+(0*2);
+    NRF_TIMER3->CC[1] = 5+(8*2);
+    NRF_TIMER3->CC[2] = 5+(40*2);
+    NRF_TIMER3->CC[3] = 5+(48*2);
+    NRF_TIMER3->CC[4] = 5+(80*2);
+    NRF_TIMER3->CC[5] = 5+(88*2);
+
+
+    // create GPIOTE task to switch LCD_COMMAND pin
+    NRF_GPIOTE->CONFIG[1] = GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos |
+                            GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos |
+                            LCD_COMMAND << GPIOTE_CONFIG_PSEL_Pos | 
+                            GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos;
+
+
+    // PPI channels for toggeling pin
+    for (int channel = 0; channel < 6; channel++) { 
+        NRF_PPI->CH[channel].EEP = (uint32_t) &NRF_TIMER3->EVENTS_COMPARE[channel];
+        if (channel % 2)
+            NRF_PPI->CH[channel].TEP = (uint32_t) &NRF_GPIOTE->TASKS_SET[1];
+        else 
+            NRF_PPI->CH[channel].TEP = (uint32_t) &NRF_GPIOTE->TASKS_CLR[1];
+    }
+
+    
+    NRF_PPI->CH[6].EEP = (uint32_t) &NRF_SPIM0->EVENTS_STARTED;
+    NRF_PPI->CH[6].TEP = (uint32_t) &NRF_TIMER3->TASKS_CLEAR;
+
+    NRF_PPI->CH[7].EEP = (uint32_t) &NRF_SPIM0->EVENTS_STARTED;
+    NRF_PPI->CH[7].TEP = (uint32_t) &NRF_TIMER3->TASKS_START;
+
+    NRF_PPI->CH[8].EEP = (uint32_t) &NRF_TIMER3->EVENTS_COMPARE[5];
+    NRF_PPI->CH[8].TEP = (uint32_t) &NRF_TIMER3->TASKS_STOP;
+
+
 }
 
 void writesquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
-    /* set square to draw in */
-    display_send (0, CMD_CASET);
+    ppi_set();
+
+    int maxLength = 254; // TODO: this should be TXD.MAXCNT
+    uint8_t byteArray [maxLength + 1];
+
+    // addresses are offset by 1 to give the ability to recycle the array
+    /* setup display for writing */
+    byteArray[1] = CMD_CASET;
  
-    display_send (1,x1 >> 8);
-    display_send (1,x1 & 0xff);
+    byteArray[2] = x1 >> 8;
+    byteArray[3] = x1 & 0xff;
 
-    display_send (1,x2 >> 8);
-    display_send (1,x2 & 0xff);
+    byteArray[4] = x2 >> 8;
+    byteArray[5] = x2 & 0xff;
 
-    display_send (0,CMD_RASET);
+    byteArray[6] = CMD_RASET;
+ 
+    byteArray[7] = y1 >> 8;
+    byteArray[8] = y1 & 0xff;
 
-    display_send (1,y1 >> 8);
-    display_send (1,y1 & 0xff);
+    byteArray[9] = y2 >> 8;
+    byteArray[10] = y2 & 0xff;
 
-    display_send (1,y2 >> 8);
-    display_send (1,y2 & 0xff);
+    byteArray[11] = CMD_RAMWR;
     /**/
 
-    /* prepare to write pixels */
-    display_send (0,CMD_RAMWR);
-    nrf_gpio_pin_write(LCD_COMMAND,1);
-    /**/
+    int area = (x2-x1+1)*(y2-y1+1);
 
-    /* actually write the pixels */
-    int pixelcount = 125; // amount of pixels to send per packet (maximum of 255/2)
-    int screensize = (x2-x1+1)*(y2-y1+1);
-    int packetcount = screensize / pixelcount;
-    int overflow = screensize % pixelcount;
+    int areaToWrite;
+    if (area > (maxLength - 11) / 2)
+        areaToWrite = (maxLength - 11) / 2;
+    else 
+        areaToWrite = area;
 
-    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
-        if (packet == packetcount)
-            pixelcount = overflow;
 
-        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+    for (int i = 0; i < areaToWrite; i++) {
+        byteArray[12+i*2] = color >> 8;
+        byteArray[12+i*2+1] = color & 0xff;
+    }
 
-        int i = 0;
-        for (int pixel = 0; pixel < pixelcount; pixel++) {
-            m_tx_buf[i] = color >> 8;
-            i++;
-            m_tx_buf[i] = color;
-            i++;
+    area -= areaToWrite;
+
+    // non blocking SPI here is negligible and unreliable cause stuff 
+    // would be written memory while sending that same memory
+    display_sendbuffer(0, byteArray + 1, (areaToWrite * 2)+11);
+    ppi_clr();
+
+    if (area > 0) {
+        for (int i = 0; i < 6; i++) {
+            byteArray[i*2] = color >> 8;
+            byteArray[i*2+1] = color;
         }
 
-        uint8_t m_length = sizeof(m_tx_buf); 
+        while (area > 0) {
+            if (area > maxLength / 2)
+                areaToWrite = maxLength / 2;
+            else 
+                areaToWrite = area;
 
+            area -= areaToWrite;
 
-        display_sendbuffer(1,m_tx_buf,m_length);
+            display_sendbuffer(0, byteArray, areaToWrite * 2);
+        }
     }
-    /**/
 }
 
 void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, uint16_t posColor, uint16_t negColor) {
@@ -267,12 +340,5 @@ void partialMode(uint16_t PSL, uint16_t PEL) {
     display_send (1,PEL & 0xff);
 
     display_send (0, CMD_PTLON);
-
-}
-
-void tempFunction() {
-    uint8_t x[211] = {CMD_CASET,0,0,0,9,CMD_RASET,0,0,0,9,CMD_RAMWR,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
-    display_sendbuffer(1,x,211);
-
 
 }
