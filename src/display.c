@@ -174,7 +174,7 @@ void display_init() {
 
 }
 
-void writesquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
     ppi_set();
 
     int maxLength = 254; // TODO: this should be TXD.MAXCNT
@@ -240,6 +240,71 @@ void writesquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t co
         }
     }
 }
+
+void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap) {
+    ppi_set();
+
+    int maxLength = 254; // TODO: this should be TXD.MAXCNT
+    uint8_t byteArray[maxLength];
+
+    // addresses are offset by 1 to give the ability to recycle the array
+    /* setup display for writing */
+    byteArray[0] = CMD_CASET;
+ 
+    byteArray[1] = x1 >> 8;
+    byteArray[2] = x1 & 0xff;
+
+    byteArray[3] = x2 >> 8;
+    byteArray[4] = x2 & 0xff;
+
+    byteArray[5] = CMD_RASET;
+ 
+    byteArray[6] = y1 >> 8;
+    byteArray[7] = y1 & 0xff;
+
+    byteArray[8] = y2 >> 8;
+    byteArray[9] = y2 & 0xff;
+
+    byteArray[10] = CMD_RAMWR;
+    /**/
+
+
+    int areaToWrite;
+    int area = (x2-x1+1)*(y2-y1+1);
+
+    if (area > maxLength / 2 - 11)
+        areaToWrite = maxLength / 2 - 11;
+    else 
+        areaToWrite = area;
+
+
+    for (int i = 0; i < areaToWrite; i++) {
+        byteArray[i*2 + 11] = bitmap[i*2];
+        byteArray[i*2+1 + 11] = bitmap[i*2+1];
+    }
+
+    area -= areaToWrite;
+
+    display_sendbuffer(0, byteArray, (areaToWrite * 2)+11);
+
+    ppi_clr();
+
+    int offset = 0;
+
+    while (area > 0) {
+        offset += areaToWrite*2;
+
+        if (area > maxLength / 2)
+            areaToWrite = maxLength / 2;
+        else 
+            areaToWrite = area;
+
+        display_sendbuffer(0, bitmap+offset, areaToWrite * 2);
+        ppi_clr();
+        area -= areaToWrite;
+    }
+}
+
 
 void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, uint16_t posColor, uint16_t negColor) {
     /* set square to draw in */
