@@ -1,6 +1,4 @@
 #include "nrf.h"
-//#include "nrf_log.h"
-//#include "nrf_log_default_backends.h"
 #include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
@@ -168,11 +166,12 @@ void display_init() {
     NRF_PPI->CH[7].EEP = (uint32_t) &NRF_SPIM0->EVENTS_STARTED;
     NRF_PPI->CH[7].TEP = (uint32_t) &NRF_TIMER3->TASKS_START;
 
-    NRF_PPI->CH[8].EEP = (uint32_t) &NRF_TIMER3->EVENTS_COMPARE[5];
-    NRF_PPI->CH[8].TEP = (uint32_t) &NRF_TIMER3->TASKS_STOP;
+  //  NRF_PPI->CH[8].EEP = (uint32_t) &NRF_TIMER3->EVENTS_COMPARE[5];
+  //  NRF_PPI->CH[8].TEP = (uint32_t) &NRF_TIMER3->TASKS_STOP;
 
 
 }
+
 
 void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
     ppi_set();
@@ -241,13 +240,13 @@ void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t col
     }
 }
 
+
 void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap) {
     ppi_set();
 
     int maxLength = 254; // TODO: this should be TXD.MAXCNT
     uint8_t byteArray[maxLength];
 
-    // addresses are offset by 1 to give the ability to recycle the array
     /* setup display for writing */
     byteArray[0] = CMD_CASET;
  
@@ -306,65 +305,77 @@ void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap
 }
 
 
-void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, uint16_t posColor, uint16_t negColor) {
-    /* set square to draw in */
-    display_send (0, CMD_CASET);
+void drawMono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* frame, uint16_t posColor, uint16_t negColor) {
+    ppi_set();
+
+    int maxLength = 254; // TODO: this should be TXD.MAXCNT
+    uint8_t byteArray0[maxLength];
+    uint8_t byteArray1[maxLength];
+
+
+    /* setup display for writing */
+    byteArray0[0] = CMD_CASET;
  
-    display_send (1,0);
-    display_send (1,x1);
+    byteArray0[1] = x1 >> 8;
+    byteArray0[2] = x1 & 0xff;
 
-    display_send (1,0);
-    display_send (1,x2);
+    byteArray0[3] = x2 >> 8;
+    byteArray0[4] = x2 & 0xff;
 
-    display_send (0,CMD_RASET);
+    byteArray0[5] = CMD_RASET;
+ 
+    byteArray0[6] = y1 >> 8;
+    byteArray0[7] = y1 & 0xff;
 
-    display_send (1,0);
-    display_send (1,y1);
+    byteArray0[8] = y2 >> 8;
+    byteArray0[9] = y2 & 0xff;
 
-    display_send (1,0);
-    display_send (1,y2);
+    byteArray0[10] = CMD_RAMWR;
     /**/
 
-    /* prepare to write pixels */
-    display_send (0,CMD_RAMWR);
-    nrf_gpio_pin_write(LCD_COMMAND,1);
-    /**/
 
-    /* actually write the pixels */
-    int pixelcount = 125; // amount of pixels to send per packet (maximum of 255/2)
-    int screensize = (x2-x1+1)*(y2-y1+1);
-    int packetcount = screensize / pixelcount;
-    int overflow = screensize % pixelcount;
+    int area = (x2-x1+1)*(y2-y1+1);
 
-    int pixelnumber = 0;
-    for (int packet = 0; packet < (packetcount + (overflow > 0)); packet++) {
-        if (packet == packetcount)
-            pixelcount = overflow;
 
-        uint8_t m_tx_buf[2 * pixelcount]; // 2 bytes per pixel
+    int pixel = 0;
+    int byte = 11;
+    int bytesToSend = byte + area*2;
+    int packet = 0;
 
-        int i = 0;
-        for (int pixel = 0; pixel < pixelcount; pixel++) {
-            uint16_t color;
-            if ((frame[pixelnumber / 8] >> (pixelnumber % 8)) & 1) {
+    while (area > pixel) {
+        uint8_t* byteArray;
+        if (packet % 2 == 0) 
+            byteArray = byteArray0;
+        else 
+            byteArray = byteArray1;
+        
+
+        while (byte < maxLength - 1 && byte < bytesToSend) {
+            uint16_t color = 0;
+
+            if ((frame[pixel / 8] >> (pixel % 8)) & 1) {
                 color = posColor;
             } else {
                 color = negColor;
             }
+            byteArray[byte] = color >> 8;
+            byte++;
+            byteArray[byte] = color;
+            byte++;
 
-            m_tx_buf[i] = color >> 8;
-            i++;
-            m_tx_buf[i] = color;
-            i++;
-            pixelnumber++;
+            pixel++;
         }
 
-        uint8_t m_length = sizeof(m_tx_buf); 
 
+        display_sendbuffer(0, byteArray, byte);
 
-        display_sendbuffer(1,m_tx_buf,m_length);
+        bytesToSend -= byte;
+        
+        byte = 0;
+
+        packet++;
+        ppi_clr();
     }
-    /**/
 }
 
 void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {

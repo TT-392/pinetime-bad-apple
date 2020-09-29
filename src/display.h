@@ -1,12 +1,13 @@
 #pragma once
 
 /*
- * this function will init the display
+ * Function to init the display, 
+ * this will initialize and use NRF_TIMER3 and the first 8 PPI channels
  */
 void display_init();
 
 /*
- * this function will write a display where x1 y1 is the top left pixel and x2 y2 is the top right pixel
+ * Function to draw a square
  */
 void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
@@ -15,13 +16,23 @@ void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t col
  */
 void display_backlight(char brightness);
 
+/*
+ * Function to draw a 1 bit bitdepth bitmap
+ */
+void drawMono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t *frame, uint16_t posColor, uint16_t negColor);
 
-void drawmono(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t *frame, uint16_t posColor, uint16_t negColor);
-
-void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
-
+/*
+ * Function to draw a bitmap to the display
+ * bitmap is an array of 8 bit integers, 2 of these form a single pixel. RGB 565 
+(most significant byte first)
+ */
 void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap);
 
 
+
+/*
+ * the following 2 functions currently don't work
+ */
+void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
 void partialMode(uint16_t PSL, uint16_t PEL);
 

@@ -82,7 +82,7 @@ SRC_FILES += \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
   $(PROJ_DIR)/external/infinitime/i2c_pine.c \
-  #$(PROJ_DIR)/modules/steamLocomotive.c \
+  $(PROJ_DIR)/modules/steamLocomotive.c \
 
 
 # Include folders common to all targets

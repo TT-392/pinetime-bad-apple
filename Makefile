@@ -32,12 +32,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/ringbuf/nrf_ringbuf.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
-  $(PROJ_DIR)/main.c \
-  $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
-  $(PROJ_DIR)/external/infinitime/i2c_pine.c \
-  $(PROJ_DIR)/main.c \
-  $(PROJ_DIR)/display.c \
-  $(PROJ_DIR)/display_print.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
@@ -46,6 +40,13 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/prs/nrfx_prs.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
+  $(PROJ_DIR)/main.c \
+  $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
+  $(PROJ_DIR)/external/infinitime/i2c_pine.c \
+  $(PROJ_DIR)/main.c \
+  $(PROJ_DIR)/display.c \
+  $(PROJ_DIR)/display_print.c \
+  $(PROJ_DIR)/modules/steamLocomotive.c \
 
 
 # Include folders common to all targets

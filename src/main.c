@@ -8,6 +8,8 @@
 #include "display_defines.h"
 #include "modules/battery.c"
 #include "test.c"
+#include "frame.c"
+#include "modules/steamLocomotive.h"
 
 _Bool toggle = 0;
 
@@ -55,31 +57,8 @@ int main(void) {
   //      currentColor = !currentColor;
   //  }
 
-    uint8_t bitmap[240*100*2] = {};
-    for (int i = 0; i < 240*100; i++) {
-        bitmap[i*2] = (int)(((i/240)^(i%240))*.250) << 3;
-        bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
-    }
 
-    drawBitmap (0, 0, 239, 99, bitmap);
-
-    for (int i = 0; i < 240*100; i++) {
-        int j = i + 240*100;
-        bitmap[i*2] = (int)(((j/240)^(j%240))*.250) << 3;
-        bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
-    }
-
-    drawBitmap (0, 100, 239, 199, bitmap);
-
-    for (int i = 0; i < 240*40; i++) {
-        int j = i + 240*100*2;
-        bitmap[i*2] = (int)(((j/240)^(j%240))*.250) << 3;
-        bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
-    }
-
-    drawBitmap (0, 200, 239, 239, bitmap);
-
-   //drawmono(0, 0, 239, 239, frame, 0x0000, 0xffff);
+   drawMono(0, 0, 239, 239, frame, 0x0000, 0xffff);
 
 
    //writesquare(0, 0, 239, 239, 0x0000);
@@ -91,21 +70,23 @@ int main(void) {
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
-    bool backlight = 1;
-    bool lastButState = 0;
-    int swipeUp = 0;
+  //  drawNumber (20, 10, 999, 0xffff, 0x0000, 3);
 
-    int lastTime = 0;
-    int i = 0;
+  //  bool backlight = 1;
+  //  bool lastButState = 0;
+  //  int swipeUp = 0;
 
-    bool running = 1;
-//    while (running) {
-//        wdt_feed();
-//        if (sl_nextFrameReady) {
-//            running = !sl(65, 0xffff, 0x0000);
-//        }
-//    }
-    void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap);
+  //  int lastTime = 0;
+  //  int i = 0;
+
+  //  bool running = 1;
+  //  while (running) {
+  //      wdt_feed();
+  //      if (sl_nextFrameReady) {
+  //          running = !sl(65, 0xffff, 0x0000);
+  //      }
+  //  }
+//    void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap);
 
     while(osRunning) {
 //        battery_percent(200,0,0xffff,0x0000);
@@ -136,10 +117,33 @@ int main(void) {
 //                writesquare(239-i, 239-y, 239-i, 239-y, color);
 //        }
 //
-        uint16_t color = randnumber() % 0xffff;
-        uint16_t x = randnumber() % 240;
-        uint16_t y = randnumber() % 240;
-//        drawBitmap (0, 120, 0, 120, bitmap);
+///        uint16_t color = randnumber() % 0xffff;
+///        uint16_t x = randnumber() % 240;
+///        uint16_t y = randnumber() % 240;
+///        uint8_t bitmap[240*100*2] = {};
+///        for (int i = 0; i < 240*100; i++) {
+///            bitmap[i*2] = (int)(((i/240)^(i%240))*.250) << 3;
+///            bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
+///        }
+///
+///        drawBitmap (0, 0, 239, 99, bitmap);
+///
+///        for (int i = 0; i < 240*100; i++) {
+///            int j = i + 240*100;
+///            bitmap[i*2] = (int)(((j/240)^(j%240))*.250) << 3;
+///            bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
+///        }
+///
+///        drawBitmap (0, 100, 239, 199, bitmap);
+///
+///        for (int i = 0; i < 240*40; i++) {
+///            int j = i + 240*100*2;
+///            bitmap[i*2] = (int)(((j/240)^(j%240))*.250) << 3;
+///            bitmap[i*2+1] = 0;//((i/120)^(i%120))*.1 << ;
+///        }
+///
+///        drawBitmap (0, 200, 239, 239, bitmap);
+        //        drawBitmap (0, 120, 0, 120, bitmap);
     //    writesquare(x, y, x, y, color);
        // uint16_t x = randnumber() % 20; uint16_t y = randnumber() % 20;
        // writesquare(x % 20, y % 20, (uint16_t)(x+(randnumber() % 20)) % 20, (uint16_t)(y+(randnumber() % 20))% 20, 0xf800);
