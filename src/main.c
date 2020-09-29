@@ -58,43 +58,33 @@ int main(void) {
   //  }
 
 
-   drawMono(0, 0, 239, 239, frame, 0x0000, 0xffff);
+//   drawMono(0, 0, 239, 239, frame, 0x0000, 0xffff);
 
 
-   //writesquare(0, 0, 239, 239, 0x0000);
-   //writesquare(0, 0, 200, 50, 0xf8f0);
-   //writesquare(50, 50, 100, 200, 0xffff);
-   //writesquare(150, 150, 154, 158, 0x5FE8);
-  // writesquare(0, 0, 240, 240, 0xffff);
-//    writesquare(50, 50, 50, 50, 0xffff);
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
-  //  drawNumber (20, 10, 999, 0xffff, 0x0000, 3);
 
-  //  bool backlight = 1;
-  //  bool lastButState = 0;
-  //  int swipeUp = 0;
-
-  //  int lastTime = 0;
-  //  int i = 0;
-
-  //  bool running = 1;
-  //  while (running) {
-  //      wdt_feed();
-  //      if (sl_nextFrameReady) {
-  //          running = !sl(65, 0xffff, 0x0000);
-  //      }
-  //  }
+    bool running = 1;
+    while (running) {
+        wdt_feed();
+        if (sl_nextFrameReady) {
+            /*running = */!sl(65, 0xffff, 0x0000);
+        }
+    }
 //    void drawBitmap (uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t* bitmap);
 
     while(osRunning) {
+        //drawMono(0, 0, 239, 239, frame, 0x0000, 0xffff);
+        //drawMono(0, 0, 239, 239, frame, 0x0000, 0xffff);
 //        battery_percent(200,0,0xffff,0x0000);
         wdt_feed();
 
- //       if (sl_nextFrameReady) {
- //          sl(65, 0xffff, 0x0000);
- //       }
+   //     while (1) {
+   //         if (sl_nextFrameReady) {
+   //             sl(65, 0xffff, 0x0000);
+   //         }
+   //     }
 
         if (nrf_gpio_pin_read(13)) {
             osRunning = 0;

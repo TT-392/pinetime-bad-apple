@@ -44,9 +44,9 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
   $(PROJ_DIR)/external/infinitime/i2c_pine.c \
   $(PROJ_DIR)/main.c \
-  $(PROJ_DIR)/display.c \
   $(PROJ_DIR)/display_print.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
+  $(PROJ_DIR)/pinetime_display_driver/display.c \
 
 
 # Include folders common to all targets
@@ -82,6 +82,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/modules/nrfx \
   $(SDK_ROOT)/integration/nrfx/legacy \
   $(PROJ_DIR)/modules\
+  $(PROJ_DIR)/pinetime_display_driver\
 
 # Libraries common to all targets
 LIB_FILES += \
