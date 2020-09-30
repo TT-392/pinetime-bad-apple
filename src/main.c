@@ -45,34 +45,40 @@ int main(void) {
     nrf_gpio_cfg_output(LCD_COMMAND);
 
 
-   drawSquare(0, 0, 239, 239, 0x0000);
+    drawSquare(0, 0, 239, 239, 0x0000);
 
 
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
-    for (int i = 0; i < 240; i++) {
-        drawSquare(i, 10+10*sin((float)i/10), i, 10+10*sin((float)i/10), 0xffff);
-    }
+  //  for (int i = 0; i < 240; i++) {
+  //      drawSquare(i, 10+10*sin((float)i/10), i, 10+10*sin((float)i/10), 0xffff);
+  //  }
 
-   // bool running = 1;
-   // while (running) {
-   //     wdt_feed();
-   //     if (sl_nextFrameReady) {
-   //         /*running = */!sl(65, 0xffff, 0x0000);
-   //     }
-   //     battery_percent(200,0,0xffff,0x0000);
-   // }
+    sl(65, 0xffff, 0x0000);
+    while (!nrf_gpio_pin_read(13)) {
+        while (!sl_nextFrameReady) {
+            __WFI();
+        }
+
+        sl(65, 0xffff, 0x0000);
+        wdt_feed();
+        battery_percent(200,0,0xffff,0x0000);
+    }
 
     while(osRunning) {
         wdt_feed();
 
+        display_backlight(0);
 
-        if (nrf_gpio_pin_read(13)) {
-            osRunning = 0;
-        }
-        display_backlight(255);
-        nrf_delay_ms(100);
+        drawSquare(0, 0, 239, 239, 0x0000);
+        nrf_delay_ms(1000);
+
+     //   if (nrf_gpio_pin_read(13)) {
+     //       osRunning = 0;
+     //   }
+     //   display_backlight(255);
+     //   nrf_delay_ms(100);
 
 
     }
