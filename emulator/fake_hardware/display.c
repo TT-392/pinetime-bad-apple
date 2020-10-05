@@ -79,11 +79,14 @@ void drawSquare(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t col
             ((color & 0x07E0)*0xff)/0x07E0,
             ((color & 0x1f)*0xff)/0x1f, 255);
 
-    for (int x = 0; x < x2-x1+1; x++) {
-        for (int y = 0; y < y2-y1+1; y++) {
-            SDL_RenderDrawPoint(renderer,x+x1,y+y1);
-        }
-    }
+    SDL_Rect srcrect;
+
+    srcrect.x = x1;
+    srcrect.y = y1;
+    srcrect.w = x2-x1;
+    srcrect.h = y2-y1;
+
+    SDL_FillRect(renderer, &srcrect,SDL_MapRGB(s->format, 255, 255, 255));
     SDL_RenderPresent(renderer);
 
 }
