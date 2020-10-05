@@ -10,8 +10,10 @@ SDK_ROOT := /home/emile/Creation/programming/sdk
 PROJ_DIR := ./src
 GNU_INSTALL_ROOT := /bin/
 
+#$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
+#  LINKER_SCRIPT  := $(SDK_ROOT)/examples/peripheral/blinky/pca10040/blank/armgcc/blinky_gcc_nrf52.ld
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-  LINKER_SCRIPT  := $(SDK_ROOT)/examples/peripheral/blinky/pca10040/blank/armgcc/blinky_gcc_nrf52.ld
+  LINKER_SCRIPT  := $(PROJ_DIR)/external/nordic/blinky_gcc_nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \
