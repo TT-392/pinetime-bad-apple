@@ -114,7 +114,7 @@ int sl(int y, uint16_t color_text, uint16_t color_bg) {
             } else {
                 if (((x + character*8) < 240 && (x + character*8) >= 0) // char out of display bounds
                 && ((line > 3 && character > 6) || string[character-1] != string[character])) { // optimization
-                    drawChar (x + character*8, charY, string[character], color_text, color_bg);
+                    drawChar (x + character*8, charY, string[character], color_text, color_bg, 0);
                 }
                 character++;
             }

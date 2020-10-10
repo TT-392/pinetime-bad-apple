@@ -5,4 +5,4 @@ makeflash_manual.sh
 src/tags
 src/.vimrc
 notes
-
+manual.bin
