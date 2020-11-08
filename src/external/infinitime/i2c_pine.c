@@ -2,6 +2,7 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
+#include "display_defines.h"
 
 #define PIN_SCL        (7)
 #define PIN_SDA        (6)
@@ -10,148 +11,151 @@
 // TODO use shortcut to automatically send STOP when receive LastTX, for example
 // TODO use DMA/IRQ
 
+#define reset_events() NRF_TWIM1->EVENTS_LASTRX = 0;\
+  NRF_TWIM1->EVENTS_STOPPED = 0;\
+  NRF_TWIM1->EVENTS_LASTTX = 0;\
+  NRF_TWIM1->EVENTS_ERROR = 0;\
+  NRF_TWIM1->EVENTS_RXSTARTED = 0;\
+  NRF_TWIM1->EVENTS_SUSPENDED = 0;\
+  NRF_TWIM1->EVENTS_TXSTARTED = 0;\
+
+volatile bool lasttxInterrupt = 0;
+
+//void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
+//    if (NRF_TWIM1->EVENTS_LASTTX) {
+//        NRF_TWIM1->EVENTS_LASTTX = 0;
+//        lasttxInterrupt = 1;
+//    }
+//}
 
 void i2c_setup() {
     // disable i2c
     NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
 
-    NRF_GPIO->PIN_CNF[PIN_SCL] = ((uint32_t)GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
 
-    NRF_GPIO->PIN_CNF[PIN_SDA] = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+    nrf_gpio_cfg_input(PIN_SDA, NRF_GPIO_PIN_PULLUP);
 
 	NRF_TWIM1->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K400 << TWIM_FREQUENCY_FREQUENCY_Pos;
 
     NRF_TWIM1->PSEL.SCL = PIN_SCL;
     NRF_TWIM1->PSEL.SDA = PIN_SDA;
-    NRF_TWIM1->EVENTS_LASTRX = 0;
-    NRF_TWIM1->EVENTS_STOPPED = 0;
-    NRF_TWIM1->EVENTS_LASTTX = 0;
-    NRF_TWIM1->EVENTS_ERROR = 0;
-    NRF_TWIM1->EVENTS_RXSTARTED = 0;
-    NRF_TWIM1->EVENTS_SUSPENDED = 0;
-    NRF_TWIM1->EVENTS_TXSTARTED = 0;
 
+    NRF_TWIM1->INTEN = 0;
+    NRF_TWIM1->INTENSET = 1 << 24;
+
+	NVIC_SetPriority(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, 2);
+    NVIC_ClearPendingIRQ(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn);
+    NVIC_EnableIRQ(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn);
+
+    reset_events();
     NRF_TWIM1->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
 }
 
 // fix i2c when it gets stuck
 void i2c_fix() {
     // disable i2c
-    uint32_t twi_state = NRF_TWI1->ENABLE;
+    uint32_t twi_state = NRF_TWIM1->ENABLE;
     NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
 
-    NRF_GPIO->PIN_CNF[PIN_SCL] = ((uint32_t)GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+    // forcee pins back
+    nrf_gpio_cfg_input(PIN_SCL, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(PIN_SDA, NRF_GPIO_PIN_PULLUP);
 
-    NRF_GPIO->PIN_CNF[PIN_SDA] = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0S1       << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
 
+    reset_events();
     NRF_TWIM1->ENABLE = twi_state;
 }
 
 
-int Read(uint8_t deviceAddress, uint8_t *buffer, size_t size, bool stop) {
-    NRF_TWIM1->ADDRESS = deviceAddress;
-    NRF_TWIM1->TASKS_RESUME = 0x1UL;
-    NRF_TWIM1->RXD.PTR = (uint32_t)buffer;
-    NRF_TWIM1->RXD.MAXCNT = size;
+int Read_noblock (uint8_t deviceAddress, uint8_t *buffer, size_t size) {
+    static bool newRead = 1;
+    static int counter = 0;
+    static int stop = 0;
+    if (newRead) {
+        reset_events();
+        NRF_TWIM1->ADDRESS = deviceAddress;
+        NRF_TWIM1->TASKS_RESUME = 0x1UL;
+        NRF_TWIM1->RXD.PTR = (uint32_t)buffer;
+        NRF_TWIM1->RXD.MAXCNT = size;
 
-    NRF_TWIM1->TASKS_STARTRX = 1;
-
-    int counter = 0;
-    while(!NRF_TWIM1->EVENTS_RXSTARTED && !NRF_TWIM1->EVENTS_ERROR){
-        counter++;
-        if (counter > 5000) return 1;
-    };
-    NRF_TWIM1->EVENTS_RXSTARTED = 0x0UL;
-
-    while(!NRF_TWIM1->EVENTS_LASTRX && !NRF_TWIM1->EVENTS_ERROR){
-        counter++;
-        if (counter > 5000) return 2;
+        NRF_TWIM1->TASKS_STARTRX = 1;
+        newRead = 0;
+        counter = 0;
+        stop = 0;
     }
-    NRF_TWIM1->EVENTS_LASTRX = 0x0UL;
 
-    if (stop || NRF_TWIM1->EVENTS_ERROR) {
-        NRF_TWIM1->TASKS_STOP = 0x1UL;
-        while(!NRF_TWIM1->EVENTS_STOPPED){
+    if (!stop) {
+        if ((!NRF_TWIM1->EVENTS_RXSTARTED || !NRF_TWIM1->EVENTS_LASTRX) & !NRF_TWIM1->EVENTS_ERROR){
             counter++;
-            if (counter > 5000) return 3;
-        }
-        NRF_TWIM1->EVENTS_STOPPED = 0x0UL;
-    }
-    else {
-        NRF_TWIM1->TASKS_SUSPEND = 0x1UL;
-        while(!NRF_TWIM1->EVENTS_SUSPENDED){
-            counter++;
-            if (counter > 5000) return 4;
-        }
-        NRF_TWIM1->EVENTS_SUSPENDED = 0x0UL;
+            if (counter > 5000) {
+                newRead = 1;
+                return 2;
+            }
+            return 0;
+        } else stop = 2;
     }
 
-    if (NRF_TWIM1->EVENTS_ERROR) {
-        NRF_TWIM1->EVENTS_ERROR = 0x0UL;
+    if (stop) {
+        if (stop == 2) {
+            NRF_TWIM1->TASKS_STOP = 0x1UL;
+            stop = 1;
+            counter = 0;
+        }
+        if (!NRF_TWIM1->EVENTS_STOPPED){
+            counter++;
+            if (counter > 5000) {
+                newRead = 1;
+                return 2;
+            }
+            return 0;
+        }
+
     }
-    return 0;
+
+    newRead = 1;
+    return 1;
 }
 
-int i2c_write(uint8_t deviceAddress, const uint8_t *data, size_t size, bool stop) {
-    NRF_TWIM1->ADDRESS = deviceAddress;
-    NRF_TWIM1->TASKS_RESUME = 0x1UL;
-    NRF_TWIM1->TXD.PTR = (uint32_t)data;
-    NRF_TWIM1->TXD.MAXCNT = size;
+int Read(uint8_t deviceAddress, uint8_t *buffer, size_t size, bool stop) {
+    int returnValue;
+    do {
+        returnValue = Read_noblock(deviceAddress, buffer, size);
+    } while (returnValue == 0);
 
-    NRF_TWIM1->TASKS_STARTTX = 5;
+    if (returnValue == 2)
+        return 2;
+    else return 0;
+}
 
-    int counter = 0;
-    while(!NRF_TWIM1->EVENTS_TXSTARTED && !NRF_TWIM1->EVENTS_ERROR){
+int i2c_write (uint8_t deviceAddress, uint8_t *data, size_t size, bool dummy) {
+    static bool newWrite = 1;
+    static int counter = 0;
+    static int stop = 1;
+    static bool once = 1;
+    newWrite = 1;
+    if (newWrite) {
+        reset_events();
+        NRF_TWIM1->ADDRESS = deviceAddress;
+        NRF_TWIM1->TASKS_RESUME = 0x1UL;
+        NRF_TWIM1->TXD.PTR = (uint32_t)data;
+        NRF_TWIM1->TXD.MAXCNT = size;
+        NRF_TWIM1->SHORTS = 1 << 8;
+
+        NRF_TWIM1->TASKS_STARTTX = 1;
+        newWrite = 0;
+        counter = 0;
+        stop = 0;
+        lasttxInterrupt = 0;
+    }
+
+
+    while(!NRF_TWIM1->EVENTS_SUSPENDED){
         counter++;
-        if (counter > 5000) return 6;
+        if (counter > 5000) return 9;
     }
+    NRF_TWIM1->EVENTS_SUSPENDED = 0x0UL;
 
-    NRF_TWIM1->EVENTS_TXSTARTED = 0x0UL;
-
-    while(!NRF_TWIM1->EVENTS_LASTTX && !NRF_TWIM1->EVENTS_ERROR){
-        counter++;
-        if (counter > 5000) return 7;
-    }
-    NRF_TWIM1->EVENTS_LASTTX = 0x0UL;
-
-    if (stop || NRF_TWIM1->EVENTS_ERROR) {
-        NRF_TWIM1->TASKS_STOP = 0x1UL;
-        while(!NRF_TWIM1->EVENTS_STOPPED){
-            counter++;
-            if (counter > 5000) return 8;
-        }
-        NRF_TWIM1->EVENTS_STOPPED = 0x0UL;
-    }
-    else {
-        NRF_TWIM1->TASKS_SUSPEND = 0x1UL;
-        while(!NRF_TWIM1->EVENTS_SUSPENDED){
-            counter++;
-            if (counter > 5000) return 9;
-        }
-        NRF_TWIM1->EVENTS_SUSPENDED = 0x0UL;
-    }
-
-    if (NRF_TWIM1->EVENTS_ERROR) {
-        NRF_TWIM1->EVENTS_ERROR = 0x0UL;
-        uint32_t error = NRF_TWIM1->ERRORSRC;
-        NRF_TWIM1->ERRORSRC = error;
-    }
+    newWrite = 1;
     return 0;
 }
 

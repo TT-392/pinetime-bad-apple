@@ -20,10 +20,12 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
   $(PROJ_DIR)/external/infinitime/i2c_pine.c \
-  $(PROJ_DIR)/main.c \
+  $(PROJ_DIR)/wdt.c \
+  $(PROJ_DIR)/semihost.c \
   $(PROJ_DIR)/display_print.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
   $(PROJ_DIR)/pinetime_display_driver/display.c \
+  $(PROJ_DIR)/main.c \
 
 
 # Include folders common to all targets

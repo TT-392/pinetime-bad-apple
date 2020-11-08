@@ -18,7 +18,7 @@ void itos (int integer, _Bool removeZeros, char* String, int strLength)  {
 }
 
 // kinda shitty implementation of the unix command, can only return a string of up to 100 characters and will use at least 100 bytes of ram, missing a bunch of stuff
-void drawDate (char* input) {
+void drawDate (int x, int y, char* input) {
     long long int time = clock_time();
     int second, minute, hour, day, month, year;
 
@@ -90,5 +90,5 @@ void drawDate (char* input) {
     
     
 
-    drawString (30, 70, tempString, 0xffff, 0x0000);
+    drawString (x, y, tempString, 0xffff, 0x0000);
 }

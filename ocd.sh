@@ -15,7 +15,7 @@ fi
 if [ "$1" = "makeflash" ];
 then
     make
-    $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f flash.cfg
+    $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f flash.cfg -l /tmp/openocd.log
 fi
 
 if [ "$1" = "flashmanual" ];

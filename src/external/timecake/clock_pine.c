@@ -25,7 +25,7 @@ long long int currentTime = 0;
 int clock_setup(void)
 {
 
-    currentTime=1599094500;
+//    currentTime=1599094500;
 
 	// Select the 32 kHz crystal and start the 32 kHz clock
 	NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos;
