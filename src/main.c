@@ -33,22 +33,17 @@ void statusBar_refresh() {
 
 
 int scrollPosition(int lowerBound, int upperBound) {
-    while (1) {
-        if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)) {
-            semihost_print("test\n", 5);
-        }
-
-    }
     static int touchAtStart = 0;
     static int lastEvent = 0;
     static int scrollAtTouchUp = 0;
 
+    nrf_delay_us(100);
 
     struct touchPoints touchPoint;
     int error;
-   // do {
+    do {
         error = touch_refresh(&touchPoint);
-   // } while (touchPoint.touchY == 0 && error == 0);
+    } while (touchPoint.touchY == 0 && error == 0);
     
     
     int touchY = 240 - touchPoint.touchY;
@@ -104,29 +99,49 @@ int main(void) {
         drawNumber(100, i*55+20, i+1, 0xffff, 0x0000, 1, 0);
     }
 
-    touch_init();
 
 //    heart_init();
 
+    nrf_gpio_cfg_output(15);	
+    nrf_gpio_pin_write(15,1);
+    nrf_gpio_cfg_input(13, NRF_GPIO_PIN_PULLDOWN);
+
+    struct touchPoints touchPoint;
+    touch_refresh(&touchPoint);
 
     int scrollPos = 0;
     while(osRunning) {
-        counter++;
+        touch_refresh(&touchPoint);
+        int error;
+        // do {
+        //error = touch_refresh(&touchPoint);
         wdt_feed();
+
+
+
+        if (!nrf_gpio_pin_read(13)) {
+            display_backlight(255);
+        }
+        else {
+            display_backlight(0);
+        }
+
+
+        counter++;
 
 
         statusBar_refresh();
 
-        int currentScroll = scrollPosition(0, 300);
+        //int currentScroll = scrollPosition(0, 300);
 
         
-        if (scrollPos < currentScroll) {
-            scrollPos ++;
-        } if (scrollPos > currentScroll) {
-            scrollPos --;
-        }
-        scrollPos = currentScroll;
+        //if (scrollPos < currentScroll) {
+        //    scrollPos ++;
+        //} if (scrollPos > currentScroll) {
+        //    scrollPos --;
+        //}
+        //scrollPos = currentScroll;
 
-//        scroll(20, 300, 0, 20 + (uint16_t)scrollPos % 300);
+        scroll(20, 300, 0, 20 + /*(uint16_t)scrollPos*/(uint16_t)counter % 300);
     }
 }
