@@ -19,6 +19,8 @@
 static int tickoff=0;
 
 long long int currentTime = 0;
+
+volatile int secondPassed = 0;
 /*
 	initialize hardware counters
 */
@@ -55,6 +57,7 @@ void RTC0_IRQHandler(void)
 		tickoff=NRF_RTC0->COUNTER&0xff8000; // 24bit counter
 		NRF_RTC0->CC[0] = ((tickoff+CLOCK_SCALE)&0xff8000) ; // next 1 second interrupt
 	}
+    secondPassed++;
 }
 
 /*

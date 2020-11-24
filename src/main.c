@@ -11,78 +11,21 @@
 #include "modules/steamLocomotive.h"
 #include "modules/breakout.c"
 #include "modules/date.c"
-#include "modules/heart.c"
-#include "touch.c"
-#include "icons.c"
+//#include "modules/heart.c"
+#include "icons/icons.c"
 #include "semihost.h"
+#include "modules/statusbar.c"
+#include "modules/scrollMenu.c"
+#include "systick.h"
 
+static bool toggle = 1;
 
-static int seed = 3322492478;
-int randnumber (void) {
-    seed = seed * 1103515245 + 12345;
-    return (unsigned int)(seed/65536) % 32768;
-}
-
-void statusBar_refresh() {
-    uint16_t color = 0xffff; 
-    if (!nrf_gpio_pin_read(19))
-        color = 0x67EC;
-    battery_percent(200,0,color,0x0000);
-    drawDate(0,0,"%H:%M:%S");
-}
-
-
-int scrollPosition(int lowerBound, int upperBound) {
-    static int touchAtStart = 0;
-    static int lastEvent = 0;
-    static int scrollAtTouchUp = 0;
-
-    nrf_delay_us(100);
-
-    struct touchPoints touchPoint;
-    int error;
-    do {
-        error = touch_refresh(&touchPoint);
-    } while (touchPoint.touchY == 0 && error == 0);
-    
-    
-    int touchY = 240 - touchPoint.touchY;
-
-    if (lastEvent == 0 && touchPoint.event != 0) { // touch down
-        touchAtStart = touchY;
-    }
-
-    if (lastEvent != 0 && touchPoint.event == 0) { // touch up
-        scrollAtTouchUp += touchY - touchAtStart;
-    }
-
-    if (touchPoint.event != 0) {
-        if ((scrollAtTouchUp + touchY - touchAtStart) <= lowerBound) { // if lower bound is reached
-            scrollAtTouchUp = lowerBound;
-            touchAtStart = touchY; // switch these around to change performance
-                                   // to leaving off when reached bound
-
-        } else if ((scrollAtTouchUp + touchY - touchAtStart) >= upperBound) {
-            scrollAtTouchUp = upperBound;
-            touchAtStart = touchY;                                    
-        }
-    }
-
-
-    lastEvent = touchPoint.event;
-    
-
-    if (touchPoint.event != 0) 
-        return scrollAtTouchUp + touchY - touchAtStart;
-    else
-        return scrollAtTouchUp;
-
-}
 
 
 int main(void) {
     battery_init();
     display_init();
+    sysTick_init();
     date_init();
     bool osRunning = 1;
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
@@ -90,31 +33,39 @@ int main(void) {
     drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
+    digitalWatch()
+
+
+
+
+    
+
     int i = 320;
     int counter = 0;
 
-    for (int i = 0; i < 5; i++) {
-        int logoColor = randnumber() % 0xfff;
-        drawMono(0, i*55+20, 55, i*55+68, termux, logoColor, 0x0000);
-        drawNumber(100, i*55+20, i+1, 0xffff, 0x0000, 1, 0);
-    }
+//    int logColor;
+//    for (int i = 0; i < 300; i++) {
+//        drawMenuLine (i, -1, i+20);
+//    }
 
-
-//    heart_init();
 
     nrf_gpio_cfg_output(15);	
     nrf_gpio_pin_write(15,1);
     nrf_gpio_cfg_input(13, NRF_GPIO_PIN_PULLDOWN);
 
-    struct touchPoints touchPoint;
-    touch_refresh(&touchPoint);
+    touch_refresh(&touchPoint1);
 
-    int scrollPos = 0;
+
+
+
+    statusBar_refresh();
+
     while(osRunning) {
-        touch_refresh(&touchPoint);
+
+        statusBar_refresh();
         int error;
         // do {
-        //error = touch_refresh(&touchPoint);
+        //error = touch_refresh(&touchPoint1);
         wdt_feed();
 
 
@@ -127,21 +78,28 @@ int main(void) {
         }
 
 
-        counter++;
 
+        //statusBar_refresh();
 
-        statusBar_refresh();
+        int selectedItem = drawScrollMenu();
+        if (selectedItem != -1) {
+            if (selectedItem == 2) {
+                drawSquare(0, 20, 239, 319, 0x0000);
+                scroll(320, 0, 0, 0);
 
-        //int currentScroll = scrollPosition(0, 300);
+                bool running = 1;
+                while (running) {
+                    wdt_feed();
+                    if (sl_nextFrameReady) {
+                        running = !sl(65, 0xffff, 0x0000);
+                        statusBar_refresh();
+                    }
+                }
 
-        
-        //if (scrollPos < currentScroll) {
-        //    scrollPos ++;
-        //} if (scrollPos > currentScroll) {
-        //    scrollPos --;
-        //}
-        //scrollPos = currentScroll;
-
-        scroll(20, 300, 0, 20 + /*(uint16_t)scrollPos*/(uint16_t)counter % 300);
+                while (1) {
+                    statusBar_refresh();
+                }
+            }
+        }
     }
 }

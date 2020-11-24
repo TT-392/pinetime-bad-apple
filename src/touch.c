@@ -11,6 +11,7 @@
 #define PIN_SCL        (7)
 #define PIN_SDA        (6)
 
+static int error = 0;
 void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     if (NRF_TWIM1->EVENTS_TXSTARTED) {
         NRF_TWIM1->EVENTS_TXSTARTED = 0;
@@ -34,6 +35,9 @@ void TIMER1_IRQHandler(void) {
     nrf_gpio_cfg_input(PIN_SDA, NRF_GPIO_PIN_PULLUP);
 
     NRF_TWIM1->ENABLE = twi_state;
+
+    NRF_TWIM1->EVENTS_LASTRX = 0;
+    error = 1;
 
     // restart i2c
     NRF_TWIM1->TASKS_STARTTX = 1;
@@ -130,20 +134,28 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     //semihost_print("reading touch\n", 14);
 
-    touchPoint->gesture = touch_data[1];
-    touchPoint->event = touch_data[3] & 0xf;
-    touchPoint->touchX = touch_data[4];
-    touchPoint->touchY = touch_data[6];
-    touchPoint->pressure = touch_data[7];
+    if (touch_data[1] != 255 && touch_data[1])
+        touchPoint->gesture = touch_data[1];
+    if (touch_data[3] != 255)
+        touchPoint->event = touch_data[3] >> 6;
+    if (touch_data[4] != 255)
+        touchPoint->touchX = touch_data[4];
+    if (touch_data[6] != 255)
+        touchPoint->touchY = touch_data[6];
+    if (touch_data[7] != 255)
+        touchPoint->pressure = touch_data[7];
 
-//    drawNumber(130, 20, touch_data[1], 0xffff, 0x0000, 3, 0);
-//    drawNumber(130, 40, touch_data[2], 0xffff, 0x0000, 3, 0);
-//    drawNumber(130, 60, touch_data[3], 0xffff, 0x0000, 3, 0);
-//    drawNumber(130, 80, touch_data[4], 0xffff, 0x0000, 3, 0);
-//    drawNumber(130, 100, touch_data[5], 0xffff, 0x0000, 3, 0);
-    drawNumber(130, 120, touch_data[6], 0xffff, 0x0000, 3, 0);
-//    drawNumber(130, 140, touch_data[7], 0xffff, 0x0000, 3, 0);
+
+    if (NRF_TWIM1->EVENTS_LASTRX)
+        error = 0;
+
+    //drawNumber(130, 0, error, 0xffff, 0x0000, 3, 0);
+
+    //drawNumber(130, 20, touchPoint->touchX, 0xffff, 0x0000, 3, 0);
+    //drawNumber(160, 20, touchPoint->touchY, 0xffff, 0x0000, 3, 0);
+    //drawNumber(130, 40, touchPoint->gesture, 0xffff, 0x0000, 3, 0);
+    //drawNumber(130, 60, touchPoint->event, 0xffff, 0x0000, 3, 0);
+    //drawNumber(130, 80, touchPoint->pressure, 0xffff, 0x0000, 3, 0);
 
     return 0;
-
 }
