@@ -19,9 +19,9 @@ $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
 SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
-  $(PROJ_DIR)/external/infinitime/i2c_pine.c \
   $(PROJ_DIR)/wdt.c \
   $(PROJ_DIR)/semihost.c \
+  $(PROJ_DIR)/systick.c \
   $(PROJ_DIR)/display_print.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
   $(PROJ_DIR)/pinetime_display_driver/display.c \
@@ -163,7 +163,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/log/src \
   $(PROJ_DIR)/external/nordic \
   $(PROJ_DIR)/external/timecake \
-  $(PROJ_DIR)/external/infinitime\
   $(PROJ_DIR)/modules\
   $(PROJ_DIR)/pinetime_display_driver\
 
@@ -171,7 +170,7 @@ INC_FOLDERS += \
 LIB_FILES += \
 
 # Optimization flags
-OPT = -O3 -g3
+OPT = -O3 -g3 #-Og
 # Uncomment the line below to enable link time optimization
 OPT += -flto
 
