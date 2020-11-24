@@ -5,7 +5,6 @@
 #include <math.h>
 
 void drawChar (int x, int y, char character, uint16_t color_text, uint16_t color_bg, _Bool Alpha) {
-
     uint8_t frame[(8*16 / 8)];
 
     if (Alpha == 0) {
@@ -37,6 +36,20 @@ void drawChar (int x, int y, char character, uint16_t color_text, uint16_t color
     }
 }
 
+int stringBMP (uint8_t* bitmap, char* text, int stringLength) {
+    for (int y = 0; y < 16; y++) {
+        for (int ch = 0; ch < stringLength; ch++) {
+            bitmap[y*stringLength + ch] = 0;
+            for (int charX = 0; charX < 6; charX++) {
+                if ((funfont_6x16r[((text[ch]- 32) * 6) + charX] >> (16 - y)) & 1) {
+                    bitmap[y*stringLength + ch] |= 1 << (charX + 1);
+                }
+            }
+        }
+    }
+
+}
+
 void drawString (int x, int y, char* text, uint16_t color_text, uint16_t color_bg) {
     _Bool terminated = 0;
     int i = 0;
@@ -52,6 +65,7 @@ void drawString (int x, int y, char* text, uint16_t color_text, uint16_t color_b
         }
     }
 }
+
 
 void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_bg, int clearLength, _Bool Alpha) {
     int i = 0;

@@ -12,3 +12,6 @@ void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_b
 
 
 void drawSelection (int x, int y, char* text, uint16_t color_text, uint16_t color_bg, int selection, _Bool vertical);
+
+
+int stringBMP (uint8_t* bitmap, char* text, int stringLength);
