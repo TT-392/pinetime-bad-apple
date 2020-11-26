@@ -1,7 +1,7 @@
 int months[12] = {31,28,31,30,31,30,31,31,30,31,30,31}; //an array with the amount of days per month
 
 //leapyear is a function that returns one if the year you put in is a leap year
-bool leapyear(int y){
+_Bool leapyear(int y){
     return (((y%4 == 0) && (y % 100 != 0)) || ((y%4 == 0) && (y % 400 == 0)));  //return if year is devidable by 4 but not by 100 or devidable by 4 and devidable by 400 (this means that it is a leap year)
 }
 

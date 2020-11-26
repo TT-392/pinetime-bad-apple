@@ -23,8 +23,13 @@ SRC_FILES += \
   $(PROJ_DIR)/utils/semihost.c \
   $(PROJ_DIR)/utils/systick.c \
   $(PROJ_DIR)/utils/display_print.c \
+  $(PROJ_DIR)/utils/calctime.c \
+  $(PROJ_DIR)/utils/battery.c \
+  $(PROJ_DIR)/modules/scrollMenu.c \
+  $(PROJ_DIR)/modules/watchface.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
   $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
+  $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/main.c \
 
 
@@ -168,6 +173,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/utils\
   $(PROJ_DIR)/drivers\
   $(PROJ_DIR)/resources\
+  $(PROJ_DIR)/resources/icons\
 
 # Libraries common to all targets
 LIB_FILES += \

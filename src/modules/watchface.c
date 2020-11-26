@@ -1,6 +1,8 @@
 #include <math.h>
-#include "calctime.c"
+#include "calctime.h"
 #include "clock_pine.c"
+#include "display.h"
+#include "display_print.h"
 #include "semihost.h"
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {

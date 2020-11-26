@@ -5,18 +5,18 @@
 #include "wdt.h"
 #include "display.h"
 #include "display_defines.h"
-#include "modules/battery.c"
+#include "battery.h"
 #include "frame.c"
-#include "modules/steamLocomotive.h"
-#include "modules/breakout.c"
+#include "steamLocomotive.h"
+#include "breakout.h"
 //#include "modules/date.c"
 //#include "modules/heart.c"
-#include "icons/icons.c"
 #include "semihost.h"
 //#include "modules/statusbar.c"
-#include "modules/scrollMenu.c"
+#include "scrollMenu.h"
 #include "systick.h"
-#include "modules/watchface.c"
+#include "watchface.h"
+#include "touch.h"
 
 static bool toggle = 1;
 
@@ -50,7 +50,7 @@ int main(void) {
     nrf_gpio_pin_write(15,1);
     nrf_gpio_cfg_input(13, NRF_GPIO_PIN_PULLDOWN);
 
-    touch_refresh(&touchPoint1);
+    //touch_refresh(&touchPoint1);
 
 
 

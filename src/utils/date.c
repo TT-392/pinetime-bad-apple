@@ -26,7 +26,7 @@ void drawDate (int x, int y, char* input) {
 
     char tempString[100];
 
-    bool terminated = 0;
+    _Bool terminated = 0;
 
     int i = 0;
     int newStrLeng = 0;

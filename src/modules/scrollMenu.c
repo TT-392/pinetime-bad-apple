@@ -1,5 +1,12 @@
-#include "touch.c"
+#include "nrf.h"
+#include "touch.h"
 #include "systick.h"
+#include "display.h"
+#include "display_print.h"
+#include "nrf_delay.h"
+#include <stdlib.h>
+#include "icons.c"
+
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
     return (unsigned int)(randomNumber/65536) % 32768;
@@ -50,7 +57,7 @@ int scrollPosition(int lowerBound, int upperBound) {
     static int touchAtStart = 0;
     static int lastEvent = 0;
     static int scrollAtTouchUp = 0;
-    static bool potentialTab = 0;
+    static _Bool potentialTab = 0;
     static int counter = 0;
     static int eventCooldown = 0;
 
@@ -180,7 +187,7 @@ void drawSelected (int filled, int selectedItem, int scrollPos) {
 }
 
 void drawMenuLine (int lineNr, int overwritingLineNr, int screenY) {
-    static bool init = 1;
+    static _Bool init = 1;
     static int stringLength = 4;
 
     if (init) {
