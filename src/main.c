@@ -10,13 +10,14 @@
 #include "frame.c"
 #include "modules/steamLocomotive.h"
 #include "modules/breakout.c"
-#include "modules/date.c"
+//#include "modules/date.c"
 //#include "modules/heart.c"
 #include "icons/icons.c"
 #include "semihost.h"
-#include "modules/statusbar.c"
+//#include "modules/statusbar.c"
 #include "modules/scrollMenu.c"
 #include "systick.h"
+#include "modules/watchface.c"
 
 static bool toggle = 1;
 
@@ -26,14 +27,14 @@ int main(void) {
     battery_init();
     display_init();
     sysTick_init();
-    date_init();
+    //date_init();
     bool osRunning = 1;
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
     drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
-    digitalWatch()
+    digitalWatch();
 
 
 
@@ -58,11 +59,11 @@ int main(void) {
 
 
 
-    statusBar_refresh();
+    //statusBar_refresh();
 
     while(osRunning) {
 
-        statusBar_refresh();
+        //statusBar_refresh();
         int error;
         // do {
         //error = touch_refresh(&touchPoint1);
@@ -92,12 +93,12 @@ int main(void) {
                     wdt_feed();
                     if (sl_nextFrameReady) {
                         running = !sl(65, 0xffff, 0x0000);
-                        statusBar_refresh();
+                        //statusBar_refresh();
                     }
                 }
 
                 while (1) {
-                    statusBar_refresh();
+                    //statusBar_refresh();
                 }
             }
         }
