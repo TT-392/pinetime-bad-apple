@@ -1,5 +1,5 @@
-#include "../display_print.h"
-#include "../external/timecake/battery_pine.c"
+#include "display_print.h"
+#include "battery_pine.c"
 
 float filteredPercentage = 0;
 

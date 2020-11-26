@@ -6,7 +6,6 @@
 #include "display.h"
 #include "display_defines.h"
 #include "modules/battery.c"
-#include "test.c"
 #include "frame.c"
 #include "modules/steamLocomotive.h"
 #include "modules/breakout.c"
@@ -37,9 +36,6 @@ int main(void) {
     digitalWatch();
 
 
-
-
-    
 
     int i = 320;
     int counter = 0;

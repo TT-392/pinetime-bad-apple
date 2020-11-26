@@ -1,5 +1,5 @@
-#include "../touch.c"
-#include "../systick.h"
+#include "touch.c"
+#include "systick.h"
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
     return (unsigned int)(randomNumber/65536) % 32768;

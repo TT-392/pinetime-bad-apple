@@ -1,5 +1,5 @@
 #include "nrf.h"
-#include "external/timecake/lcd_font.c"
+#include "../external/timecake/lcd_font.c"
 #include "display.h"
 #include "display_print.h"
 #include <math.h>

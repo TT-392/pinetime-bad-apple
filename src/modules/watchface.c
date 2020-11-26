@@ -1,7 +1,7 @@
 #include <math.h>
-#include "../calctime.c"
-#include "../external/timecake/clock_pine.c"
-#include "../semihost.h"
+#include "calctime.c"
+#include "clock_pine.c"
+#include "semihost.h"
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {
     if (!horizontal) {

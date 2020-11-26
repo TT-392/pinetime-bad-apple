@@ -19,12 +19,12 @@ $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
 SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
-  $(PROJ_DIR)/wdt.c \
-  $(PROJ_DIR)/semihost.c \
-  $(PROJ_DIR)/systick.c \
-  $(PROJ_DIR)/display_print.c \
+  $(PROJ_DIR)/utils/wdt.c \
+  $(PROJ_DIR)/utils/semihost.c \
+  $(PROJ_DIR)/utils/systick.c \
+  $(PROJ_DIR)/utils/display_print.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
-  $(PROJ_DIR)/pinetime_display_driver/display.c \
+  $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
   $(PROJ_DIR)/main.c \
 
 
@@ -164,7 +164,10 @@ INC_FOLDERS += \
   $(PROJ_DIR)/external/nordic \
   $(PROJ_DIR)/external/timecake \
   $(PROJ_DIR)/modules\
-  $(PROJ_DIR)/pinetime_display_driver\
+  $(PROJ_DIR)/drivers/pinetime_display_driver\
+  $(PROJ_DIR)/utils\
+  $(PROJ_DIR)/drivers\
+  $(PROJ_DIR)/resources\
 
 # Libraries common to all targets
 LIB_FILES += \
