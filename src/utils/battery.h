@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nrf.h"
+
 void battery_init ();
 
 

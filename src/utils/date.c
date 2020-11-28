@@ -1,9 +1,10 @@
-#include "../display_print.h"
-#include "../calctime.c"
-#include "../external/timecake/clock_pine.c"
+#include "display_print.h"
+#include "calctime.h"
+#include "clock_pine.h"
 
 void date_init() {
     clock_setup();
+
 }
 
 void itos (int integer, _Bool removeZeros, char* String, int strLength)  {

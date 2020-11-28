@@ -1,3 +1,8 @@
+#include "date.h"
+#include "battery.h"
+#include "nrf_gpio.h"
+#include "clock_pine.h"
+
 void statusBar_refresh() {
     if (secondPassed) {
         uint16_t color = 0xffff; 

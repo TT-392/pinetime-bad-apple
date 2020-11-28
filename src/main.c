@@ -12,10 +12,11 @@
 //#include "modules/date.c"
 //#include "modules/heart.c"
 #include "semihost.h"
-//#include "modules/statusbar.c"
+#include "statusbar.h"
 #include "scrollMenu.h"
 #include "systick.h"
 #include "watchface.h"
+#include "date.h"
 #include "touch.h"
 
 static bool toggle = 1;
@@ -25,6 +26,7 @@ static bool toggle = 1;
 int main(void) {
     battery_init();
     display_init();
+    date_init();
     sysTick_init();
     //date_init();
     bool osRunning = 1;
@@ -33,7 +35,7 @@ int main(void) {
     drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
-    digitalWatch();
+//    digitalWatch();
 
 
 
@@ -57,9 +59,10 @@ int main(void) {
 
     //statusBar_refresh();
 
+    scrollMenu_init();
     while(osRunning) {
 
-        //statusBar_refresh();
+        statusBar_refresh();
         int error;
         // do {
         //error = touch_refresh(&touchPoint1);
@@ -76,26 +79,28 @@ int main(void) {
 
 
 
-        //statusBar_refresh();
 
         int selectedItem = drawScrollMenu();
         if (selectedItem != -1) {
+            scroll(320, 0, 0, 0);
             if (selectedItem == 2) {
                 drawSquare(0, 20, 239, 319, 0x0000);
-                scroll(320, 0, 0, 0);
 
                 bool running = 1;
                 while (running) {
                     wdt_feed();
                     if (sl_nextFrameReady) {
                         running = !sl(65, 0xffff, 0x0000);
-                        //statusBar_refresh();
+                        statusBar_refresh();
                     }
                 }
+                scrollMenu_init();
 
-                while (1) {
-                    //statusBar_refresh();
-                }
+            }
+            if (selectedItem == 0) {
+                digitalWatch();
+                drawSquare(0, 0, 239, 319, 0x0000);
+                scrollMenu_init();
             }
         }
     }

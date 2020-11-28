@@ -4,6 +4,8 @@
 #include "display.h"
 #include "display_print.h"
 #include "semihost.h"
+#include "touch.h"
+#include "systick.h"
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {
     if (!horizontal) {
@@ -344,54 +346,65 @@ void digitalWatch() {
     char* months[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
 
     
+    uint64_t lastTime = cpuTime();
 
     int i = 0;
     while (1) {
-        long long int time = clock_time();
-        int second, minute, hour, day, month, year;
+        if ((cpuTime() - lastTime) > 64000000) {
+            lastTime = cpuTime();
 
-        epochtotime(time, &second, &minute, &hour, &day, &month, &year);
+            long long int time = clock_time();
+            int second, minute, hour, day, month, year;
 
-        //char printvalue[11] = "0000000000\n";
-        //int division = 1;
-        //for (int k = 0; k < 10; k++) {
-        //    printvalue[9-k] += (time / (division)) % 10;
-        //    division *= 10;
-        //}
+            epochtotime(time, &second, &minute, &hour, &day, &month, &year);
 
-        //semihost_print(printvalue, 11);
+            //char printvalue[11] = "0000000000\n";
+            //int division = 1;
+            //for (int k = 0; k < 10; k++) {
+            //    printvalue[9-k] += (time / (division)) % 10;
+            //    division *= 10;
+            //}
 
-        draw7SegmentNumber(32  - 15, 100, (hour / 10) % 10, colorOn, colorOff);
-        draw7SegmentNumber(32  - 15 + 50, 100, hour % 10, colorOn, colorOff);
+            //semihost_print(printvalue, 11);
 
-        draw7SegmentNumber(120 + 15, 100, (minute / 10) % 10, colorOn, colorOff);
-        draw7SegmentNumber(120 + 15 + 50, 100, minute % 10, colorOn, colorOff);
+            draw7SegmentNumber(32  - 15, 100, (hour / 10) % 10, colorOn, colorOff);
+            draw7SegmentNumber(32  - 15 + 50, 100, hour % 10, colorOn, colorOff);
 
-        drawCircle(120, 100 + 14, 5, i % 2 ? colorOff : colorOn);
-        drawCircle(120, 100 - 14, 5, i % 2 ? colorOff : colorOn);
+            draw7SegmentNumber(120 + 15, 100, (minute / 10) % 10, colorOn, colorOff);
+            draw7SegmentNumber(120 + 15 + 50, 100, minute % 10, colorOn, colorOff);
 
-        i++;
+            drawCircle(120, 100 + 14, 5, i % 2 ? colorOff : colorOn);
+            drawCircle(120, 100 - 14, 5, i % 2 ? colorOff : colorOn);
 
-        drawString(187, 140, "AM", colorOff, 0x0000);
-        drawString(187 + 8*2, 140, "PM", colorOff, 0x0000);
+            i++;
 
-        int j = 0;
-        draw14SegmentNumber(18 + j*30, 185, numbers[(day / 10) %10], colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, numbers[day % 10], colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, 0x40, colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][0] - 97], colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][1] - 97], colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][2] - 97], colorOn, colorOff);
-        j++;
-        draw14SegmentNumber(18 + j*30, 185, 0, colorOn, colorOff);
+            drawString(187, 140, "AM", colorOff, 0x0000);
+            drawString(187 + 8*2, 140, "PM", colorOff, 0x0000);
 
-        nrf_delay_ms(1000);
+            int j = 0;
+            draw14SegmentNumber(18 + j*30, 185, numbers[(day / 10) %10], colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, numbers[day % 10], colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, 0x40, colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][0] - 97], colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][1] - 97], colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][2] - 97], colorOn, colorOff);
+            j++;
+            draw14SegmentNumber(18 + j*30, 185, 0, colorOn, colorOff);
 
+            
+        }
+
+
+        struct touchPoints touchPoint;
+        touch_refresh(&touchPoint);
+        if (touchPoint.gesture == 0x0C) {
+            return;
+        }
     }
 
 

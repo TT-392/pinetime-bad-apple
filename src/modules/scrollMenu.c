@@ -53,13 +53,23 @@ struct menu_items menu[13] = {
 static struct touchPoints touchPoint1;
 
 // Read the touch screen and turn that into a position where the user scrolled to 
-int scrollPosition(int lowerBound, int upperBound) {
+int scrollPosition(int lowerBound, int upperBound, bool reset) {
     static int touchAtStart = 0;
     static int lastEvent = 0;
     static int scrollAtTouchUp = 0;
     static _Bool potentialTab = 0;
     static int counter = 0;
     static int eventCooldown = 0;
+
+    if (reset) {
+        touchAtStart = 0;
+        lastEvent = 0;
+        scrollAtTouchUp = 0;
+        potentialTab = 0;
+        counter = 0;
+        eventCooldown = 0;
+        return 0;
+    }
 
 
     int error;
@@ -229,15 +239,19 @@ void drawMenuLine (int lineNr, int overwritingLineNr, int screenY) {
 }
 
 
-int ScrollMenu_init () {
+static int scrollPos = 0;
+    
 
+int scrollMenu_init () {
+    for (int i = 0; i < 220; i++)
+        drawMenuLine(i, -1, i+20);
+    scrollPos = 0;
+    scrollPosition(0,0,1);
 }
 
 int drawScrollMenu () {
-    static int scrollPos = 0;
     
-    
-    int currentScroll = scrollPosition(0, menu_length*55 - 240 + 20);
+    int currentScroll = scrollPosition(0, menu_length*55 - 240 + 20, 0);
 
     if (currentScroll != -1) {
         int direction = 0;
