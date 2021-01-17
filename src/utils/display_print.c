@@ -69,12 +69,15 @@ void drawString (int x, int y, char* text, uint16_t color_text, uint16_t color_b
 
 void drawNumber (int x, int y, int number, uint16_t color_text, uint16_t color_bg, int clearLength, _Bool Alpha) {
     int i = 0;
+    if (number == 0) {
+        drawChar (x, y, 0 + 48, color_text, color_bg, Alpha);
+    }
     while (number > 0) {
         drawChar (x - i*8, y, number % 10 + 48, color_text, color_bg, Alpha);
         number /= 10;
         i++;
     }
-    while (clearLength > i) {
+    while (clearLength > i && i > 0) {
         drawChar (x - i*8, y, 32, color_text, color_bg, Alpha);
         i++;
     }

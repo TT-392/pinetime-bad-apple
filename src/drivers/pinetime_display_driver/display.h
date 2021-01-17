@@ -30,9 +30,9 @@ void drawBitmap (uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t* bi
 
 
 
+void display_scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
 /*
- * the following 2 functions currently don't work
+ * the following function currently doesn't work
  */
-void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value);
 void partialMode(uint16_t PSL, uint16_t PEL);
 

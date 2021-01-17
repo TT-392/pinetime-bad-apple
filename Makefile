@@ -26,6 +26,7 @@ SRC_FILES += \
   $(PROJ_DIR)/utils/calctime.c \
   $(PROJ_DIR)/utils/battery.c \
   $(PROJ_DIR)/utils/date.c \
+  $(PROJ_DIR)/utils/geometry.c \
   $(PROJ_DIR)/modules/scrollMenu.c \
   $(PROJ_DIR)/modules/watchface.c \
   $(PROJ_DIR)/modules/statusbar.c \

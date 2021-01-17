@@ -6,6 +6,8 @@
 #include "semihost.h"
 #include "touch.h"
 #include "systick.h"
+#include "geometry.h"
+#include "wdt.h"
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {
     if (!horizontal) {
@@ -304,13 +306,6 @@ int draw14SegmentNumber(int xSegment, int ySegment, uint16_t character, int colo
     }
 }
 
-void drawCircle(int x, int y, int radius, uint16_t color) {
-    for (int i = -radius; i <= radius; i++) {
-        int halfLength = sqrt(radius*radius - i*i);
-        drawSquare(x - halfLength, y + i, x + halfLength, y + i, color);
-    }
-}
-
 void digitalWatch() {
     drawSquare(0, 0, 239, 239, 0x0000);
     clock_setup();
@@ -397,6 +392,7 @@ void digitalWatch() {
             draw14SegmentNumber(18 + j*30, 185, 0, colorOn, colorOff);
 
             
+            wdt_feed();
         }
 
 

@@ -6,13 +6,34 @@
 #include "nrf_delay.h"
 #include <stdlib.h>
 #include "icons.c"
+#include "semihost.h"
 
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
     return (unsigned int)(randomNumber/65536) % 32768;
 }
 
-struct menu_items {
+// ┌──────────┐ 
+// │          │ lines that don't move (used for status bar)
+// ├──────────┤ menu.top
+// │          │ actual visible menu
+// │          │
+// ├──────────┤ menu.bottom (should be the last line of the display, 239)
+// ├──────────┤ menu.bottom + 1 this is where writing happens (writeU)
+// ├──────────┤ menu.bottom + 20 this is where writing happens (writeD)
+// │          │ lines that don't scroll (probably off screen)
+// └──────────┘
+// the lines from menu.top to menu.bottom + 1 scroll; therefore memory coordinates
+// are mapped to shifted screen coordinates, this causes writeY to change
+//
+// there are 20 lines that are scrolling but not visible, this is because scroll
+// commands lagg behind display write commands on the screen causing problems at
+// higher speed (these 20 lines are referred to as clearance in code)
+
+
+volatile static int tabY = 0;
+
+struct menu_item {
     uint8_t *icon;
     char* name;
     uint16_t color;
@@ -20,10 +41,7 @@ struct menu_items {
     uint8_t *textBMP;
 };
 
-int menu_length = 13;
-volatile static int tabY = 0;
-
-struct menu_items menu[13] = {
+struct menu_item menu_items[13] = {
     {clockDigital,"clock",   0x06fe},
     {termux,   "test2",      0x00f0},
     {trainIcon,"SL",         0xffff},
@@ -39,19 +57,37 @@ struct menu_items menu[13] = {
     {termux,   "yay",        0x00f0}
 };
 
+struct menu_properties {
+    uint16_t top;
+    uint16_t bottom;
+    int length;
+    struct menu_item* items;
+    int item_size;
+    int icon_top;
+    int icon_height;
+    int icon_width; // in bytes
+};
 
-// ┌──────────┐ first 20 lines are reserved for the statusbar
-// ├──────────┤ on this line writing happens
-// │          │ 220 lines are visible scrolling screen area
-// │          │
-// ├──────────┤ on this line more writing happens
-// │          │ this area (55 lines) scrolls but nothing is written here (for easy math)
-// ├──────────┤ 
-// └──────────┘ 25 lines are unused
+struct menu_properties menu = {
+    .top = 20,
+    .bottom = 238,
+    .length = 13,
+    .items = menu_items,
+    .item_size = 73,
+    .icon_top = 0,
+    .icon_height = 49,
+    .icon_width = 7
+};
+
+
 
 
 static struct touchPoints touchPoint1;
 
+//// Read the touch screen and turn that into a position where the user scrolled to 
+//int scrollPosition(int lowerBound, int upperBound, bool reset) {
+//    
+//}
 // Read the touch screen and turn that into a position where the user scrolled to 
 int scrollPosition(int lowerBound, int upperBound, bool reset) {
     static int touchAtStart = 0;
@@ -76,7 +112,6 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
     do {
         error = touch_refresh(&touchPoint1);
     } while (touchPoint1.touchY == 0 && error == 0);
-
 
 
     static uint64_t debounceStatus;
@@ -174,12 +209,12 @@ void drawSelected (int filled, int selectedItem, int scrollPos) {
                 x = 119 - i;
 
             for (int y = 0; y < 48; y++) {
-                if (x < 55 && (menu[selectedItem].icon[y*7 + x/8] & 1 << (x % 8))) {
-                    displayColumn[y*2] = menu[selectedItem].color >> 8;
-                    displayColumn[y*2 + 1] = menu[selectedItem].color & 0xff;
+                if (x < 55 && (menu.items[selectedItem].icon[y*7 + x/8] & 1 << (x % 8))) {
+                    displayColumn[y*2] = menu.items[selectedItem].color >> 8;
+                    displayColumn[y*2 + 1] = menu.items[selectedItem].color & 0xff;
 
-                } else if (y >= 18 && y < 34 && x >= 70 && x <= (70 + 8*menu[selectedItem].nameLength - 1) &&
-                        menu[selectedItem].textBMP[(y-18)*menu[selectedItem].nameLength + (x-70)/8] & 1 << ((x-70) % 8)) {
+                } else if (y >= 18 && y < 34 && x >= 70 && x <= (70 + 8*menu.items[selectedItem].nameLength - 1) &&
+                        menu.items[selectedItem].textBMP[(y-18)*menu.items[selectedItem].nameLength + (x-70)/8] & 1 << ((x-70) % 8)) {
 
                     displayColumn[y*2] = 0xff;
                     displayColumn[y*2 + 1] = 0xff;
@@ -196,89 +231,114 @@ void drawSelected (int filled, int selectedItem, int scrollPos) {
     }
 }
 
-void drawMenuLine (int lineNr, int overwritingLineNr, int screenY) {
+// drawMenuLine is a function to draw a line of the menu
+// lineNr = the scroll menu line Nr
+// overWritingLineNr = the line Nr of the line that is currently on this line of display memory (for partial updates)
+// screenY = the line of the display memory to write to
+void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
     static _Bool init = 1;
-    static int stringLength = 4;
 
     if (init) {
-        for (int i = 0; i < menu_length; i++) {
-            menu[i].nameLength = 0;
-            while (menu[i].name[menu[i].nameLength] != '\0') {
-                menu[i].nameLength++;
+        // convert text to bmp
+        for (int i = 0; i < menu.length; i++) {
+            menu.items[i].nameLength = 0;
+            while (menu.items[i].name[menu.items[i].nameLength] != '\0') {
+                menu.items[i].nameLength++;
             }
-            menu[i].textBMP= malloc(16*menu[i].nameLength);
+            menu.items[i].textBMP = malloc(16*menu.items[i].nameLength);
 
-            stringBMP (menu[i].textBMP, menu[i].name, menu[i].nameLength);
+            stringBMP (menu.items[i].textBMP, menu.items[i].name, menu.items[i].nameLength);
         }
         init = 0;
     }
+    
 
-    if (overwritingLineNr / 55 < menu_length && overwritingLineNr >= 0) {
-        if (overwritingLineNr >= 0 && ((overwritingLineNr % 55) > 17 && (overwritingLineNr % 55) < 34))
-            drawSquare(70, screenY, 70+8*menu[overwritingLineNr / 55].nameLength-1, screenY, 0x0000);
+    if (overWritingLineNr / menu.item_size < menu.length && overWritingLineNr >= 0) {
+        if (overWritingLineNr >= 0 && ((overWritingLineNr % menu.item_size) > 17 && (overWritingLineNr % menu.item_size) < 34))
+            drawSquare(70, screenY, 70+8*menu.items[overWritingLineNr / menu.item_size].nameLength-1, screenY, 0x0000);
     }
 
 
 
-    if (lineNr / 55 < menu_length && lineNr >= 0) {
+    if (lineNr / menu.item_size < menu.length && lineNr >= 0) {
         // if on a line where text should be drawn
-        if ((lineNr % 55) >= 18 && (lineNr % 55) < 34)
-            drawMono(70, screenY, 70+8*menu[lineNr / 55].nameLength-1, screenY, menu[lineNr / 55].textBMP+ (menu[lineNr / 55].nameLength*(lineNr % 55 - 18)), 0xffff, 0x0000);
+        if ((lineNr % menu.item_size) >= 18 && (lineNr % menu.item_size) < 34) {
+            uint16_t startX = 70;
+            uint16_t endX = 70+8*menu.items[lineNr / menu.item_size].nameLength-1;
+            drawMono(startX, screenY, endX, screenY, menu.items[lineNr / menu.item_size].textBMP + (menu.items[lineNr / menu.item_size].nameLength*(lineNr % menu.item_size - 18)), 0xffff, 0x0000);
+        }
 
 
 
+        int iconLine = (lineNr % menu.item_size) - menu.icon_top;
+        int overWritingIconLine = (overWritingLineNr % menu.item_size) - menu.icon_top;
 
-
-        if (lineNr % 55 < 49) {
-            int logColor = menu[lineNr / 55].color;
-            drawMono(0, screenY, 55, screenY, menu[lineNr / 55].icon+(lineNr%55)*7, logColor, 0x0000);
-        } else {
-            drawSquare(0, screenY, 55, screenY, 0x0000);
+        if (iconLine < menu.icon_height && iconLine >= 0) {
+            uint8_t *icon = menu.items[lineNr / menu.item_size].icon;
+            int iconColor = menu.items[lineNr / menu.item_size].color;
+            drawMono(0, screenY, menu.icon_width*8-1, screenY, icon + iconLine * menu.icon_width, iconColor, 0x0000);
+        } else if (overWritingIconLine < menu.icon_height && overWritingIconLine >= 0){
+            drawSquare(0, screenY, menu.icon_width*8-1, screenY, 0x0000);
         }
     } 
 }
 
 
-static int scrollPos = 0;
+static int actualScroll = 0;
     
+void drawScrollBar( );
 
 int scrollMenu_init () {
     for (int i = 0; i < 220; i++)
         drawMenuLine(i, -1, i+20);
-    scrollPos = 0;
+    actualScroll = 0;
     scrollPosition(0,0,1);
 }
 
+
 int drawScrollMenu () {
-    
-    int currentScroll = scrollPosition(0, menu_length*55 - 240 + 20, 0);
 
-    if (currentScroll != -1) {
-        int direction = 0;
-        if (scrollPos < currentScroll) { // scrolling down
-            scrollPos ++;
+    int clearance = 20; // see explaination at beginning of file
+    int TFA = menu.top; // top fixed area
+    int VSA = 220 + clearance;// vertical scrolling area
+
+    static int direction = 1;
+    static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
 
 
-            int screenY = (220 + scrollPos) % 275 + 20;
-            int overwritingLineNr = scrollPos - 55;
-            drawMenuLine (220 + scrollPos, overwritingLineNr, screenY);
+    int fingerScroll = scrollPosition(0, menu.length*55 - 220, 0);
+    if (fingerScroll != -1) {
+        if (fingerScroll > actualScroll)
+            direction = 1;
+        else if (fingerScroll < actualScroll)
+            direction = -1;
+        else
+            direction = 0;
 
-        } if (scrollPos > currentScroll) {// scrolling up
-            scrollPos --;
-            direction = 2;
+        actualScroll+= direction;
 
-            int screenY = (scrollPos) % 275 + 20;
-            int overwritingLineNr = 220 + scrollPos + 55;
-            drawMenuLine (scrollPos, overwritingLineNr, screenY);
+        int SSA = (actualScroll % VSA) + menu.top; // scroll start address
+
+        if (direction == 1) { // scrolling up (finger going up)
+            int writeU = (actualScroll + VSA-1-clearance) % VSA + menu.top;
+            int lineNr = actualScroll + VSA-1-clearance;
+            int overWritingLineNr = lineNr - VSA;
+
+            drawMenuLine (lineNr, overWritingLineNr, writeU);
+        }
+        if (direction == -1) { // scrolling down
+            int writeD = SSA;
+            int lineNr = actualScroll;
+            int overWritingLineNr = lineNr + VSA;
+
+            drawMenuLine (lineNr, overWritingLineNr, writeD);
         }
 
-
-        scroll(20, 275, 25, 20 + (uint16_t)scrollPos % 275);
-
+        display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
     } else {
-        int selectedItem = ((tabY - 20) + scrollPos) / 55;
+        int selectedItem = ((tabY - 20) + actualScroll) / 55;
 
-        drawSelected(100, selectedItem, scrollPos);
+        drawSelected(100, selectedItem, actualScroll);
         return selectedItem;
     }
     return -1;

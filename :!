@@ -33,7 +33,7 @@ int main(void) {
     bool osRunning = 1;
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
-    drawSquare(0, 0, 239, 319, 0xffff);
+    drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
 //    digitalWatch();
@@ -48,7 +48,7 @@ int main(void) {
 //        drawMenuLine (i, -1, i+20);
 //    }
 
-//    drawSquare(0, 0, 239, 319, 0xffff);
+    drawSquare(0, 0, 239, 319, 0xffff);
 
     nrf_gpio_cfg_output(15);	
     nrf_gpio_pin_write(15,1);
@@ -59,14 +59,14 @@ int main(void) {
     while (1) {
         touch_refresh(&touchPoint);
         if (touchPoint.error == 0) {
-            //drawNumber(140,50,touchPoint.touchTime,0xffff,0x0000,10,0);
+            drawNumber(0,0,touchPoint.timeWhenDown,5);
            // drawSquare(touchPoint.touchX,touchPoint.touchY,touchPoint.touchX,touchPoint.touchY,0xffff);
            // //if (touchPoint.event == 1) {
             if (touchPoint.tab) {
                // drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0x07FC);
-                display_backlight(255);
+                //display_backlight(255);
             } else {
-                display_backlight(0);
+                //display_backlight(0);
             }
         }
     }

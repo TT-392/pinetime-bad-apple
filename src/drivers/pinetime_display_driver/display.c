@@ -405,7 +405,7 @@ void drawMono(int x1, int y1, int x2, int y2, uint8_t* frame, uint16_t posColor,
 
 }
 
-void scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {
+void display_scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_value) {
     // the following CC setup will cause byte 0, 5 and 10 
     // of any SPIM0 dma transfer to be treated as CMD bytes
     NRF_TIMER3->CC[0] = 5+(8*0*2); // low

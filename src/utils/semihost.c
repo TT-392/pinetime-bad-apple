@@ -1,6 +1,7 @@
 #include "nrf.h"
+
 void semihost_print(char* buffer, int length) {
-    if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)) {
+    if ((CoreDebug->DHCSR & 1)) { // check if debugger connected
         uint32_t args[3];
         args[0] = (uint32_t) 2;
         args[1] = (uint32_t) buffer;
@@ -21,4 +22,8 @@ void semihost_print(char* buffer, int length) {
     };
 }
 
+void semihost_printNumber(uint8_t number) {
+    char string[3] = {'0'+(number/100)%10,'0'+(number/10)%10,'0'+number%10};
 
+    semihost_print(string ,3);
+}
