@@ -6,6 +6,8 @@
 #include "display.h"
 #include "semihost.h"
 #include "systick.h"
+#include <math.h>
+#include <stdlib.h>
 
 #define TOUCH_I2C_DEVICE (0x15)
 
@@ -13,12 +15,14 @@
 #define PIN_SDA        (6)
 #define PIN_TouchInt   (28)
 
-
 static volatile uint8_t touch_data[8] = {0};
 static int error = 0;
 static int timeOutCount = 0;
 static bool touchInt = 0;
 static uint8_t tab = 0;
+static int errorCount = 0;
+static uint64_t timeDown = 0;
+static uint64_t time = 0;
 
 // event = 1: finger lifted from screen
 // event = 2; finger touching screen
@@ -28,6 +32,10 @@ static uint8_t tab = 0;
 // sliding over the screen this should probably 
 // not be counted as a lifting finger
 
+static bool backlight = 1;
+static uint64_t timeWhenDown = 0;
+static uint8_t Xdistance = 0;
+static uint8_t Ydistance = 0;
 void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     // start of new data read
     if (NRF_TWIM1->EVENTS_TXSTARTED) {
@@ -40,33 +48,75 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     if (NRF_TWIM1->EVENTS_LASTRX) {
         NRF_TWIM1->EVENTS_LASTRX = 0;
 
-        static uint8_t lastEvent = 0;
-        static uint8_t touch = 0;
+        // detect faulty data
+        if (touch_data[4] != 255 && touch_data[4] != 0 &&
+            touch_data[6] != 255 && touch_data[6] != 0) {
 
-        uint8_t event = touch_data[3] >> 6;
+            static uint8_t lastEvent = 0;
+            static uint8_t touch = 0;
+            static uint8_t touchXdown = 0;
+            static uint8_t touchYdown = 0;
+            uint8_t touchX = touch_data[4];
+            uint8_t touchY = touch_data[6];
 
-        if (event == 0 && lastEvent == 1) { // finger actually going up
-            touch = 0;
-        } 
-        if (event == 2 && touch == 0) {
-            touch = 1;
+            uint8_t event = touch_data[3] >> 6;
+
+            static int status = 0;
+
+            if (event == 0 && lastEvent == 1) { // finger actually going up
+                timeDown = /*!timeDown;//*/time - timeWhenDown;
+                if (touch == 0) {
+                    timeDown = 0;
+                }
+                //if (timeDown > 10000000) {
+                //    display_backlight(255);
+                //} else {
+                //    display_backlight(0);
+                //}
+                touch = 0;
+                if (status == 2) {
+                    tab = 1;
+                }
+            } 
+
+            if (event == 2) {
+                if (status == 2) {
+                    if (sqrt(pow(touchXdown - touchX,2) + pow(touchYdown - touchY,2)) > 5) {
+                        status = 0;
+                    }
+                }
+            }
+
+            if (event == 2 && touch == 0) { // finger actually going down
+                touch = 1;
+                timeWhenDown = time; 
+                tab = 2;
+                touchXdown = touchX;
+                touchYdown = touchY;
+                status = 2;
+            }
+
+
+            lastEvent = event;
+        } else {
+            error = 1;
         }
 
-        tab = touch;
-
-        lastEvent = event;
-
-        NRF_TWIM1->TASKS_STARTTX = 1;
     }
 }
 
 void GPIOTE_IRQHandler(void) {
     if (NRF_GPIOTE->EVENTS_IN[2]) {
         NRF_GPIOTE->EVENTS_IN[2] = 0;
+        drawSquare(0, 0, 239, 319, 0x0000);
+
+        //backlight = !backlight;
+        //display_backlight(255*backlight);
     } 
 }
 
-// timer 1 detects if twim is taking too long
+// twim timeout interrupt
+// interrupt triggers when either i2c gets stuck, or when controller asleep
 void TIMER1_IRQHandler(void) {
     NRF_TIMER1->EVENTS_COMPARE[0] = 0;
 
@@ -83,12 +133,12 @@ void TIMER1_IRQHandler(void) {
     NRF_TWIM1->ENABLE = twi_state;
 
     NRF_TWIM1->EVENTS_LASTRX = 0;
-    error = 1;
 
     NRF_TIMER1->TASKS_STOP = 1;
     // restart i2c
     NRF_TWIM1->TASKS_STARTTX = 1;
-    timeOutCount++;
+
+    errorCount++;
 }
 
 struct touchPoints {
@@ -99,6 +149,7 @@ struct touchPoints {
     uint8_t pressure;
     uint8_t error;
     uint8_t tab;
+    int errorCount;
 };
 
 static volatile uint8_t registerNr = 0;
@@ -116,7 +167,7 @@ int touch_init() {
     // create GPIOTE event for the int pin
     NRF_GPIOTE->CONFIG[2] = GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos |
         1 << GPIOTE_CONFIG_POLARITY_Pos |
-        PIN_TouchInt << GPIOTE_CONFIG_PSEL_Pos;
+        /*PIN_TouchInt */13 << GPIOTE_CONFIG_PSEL_Pos;
 
     // setup interrupt
     NRF_GPIOTE->INTENSET = 1 << 2;
@@ -165,7 +216,7 @@ int touch_init() {
     NRF_TWIM1->TXD.PTR = (uint32_t)&registerNr;
     NRF_TWIM1->TXD.MAXCNT = 1;
     NRF_TWIM1->TASKS_RESUME = 1;
-    NRF_TWIM1->SHORTS = TWIM_SHORTS_LASTTX_STARTRX_Msk;
+    NRF_TWIM1->SHORTS = TWIM_SHORTS_LASTTX_STARTRX_Msk | TWIM_SHORTS_LASTRX_STARTTX_Msk;
     //          //
 
     // setup rx //
@@ -190,34 +241,45 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     //semihost_print("reading touch\n", 14);
 
-    touchPoint->error = 0;
+    //touchPoint->error = 0;
 
-    if (touch_data[1] != 255 && touch_data[1])
-        touchPoint->gesture = touch_data[1];
-    else touchPoint->error = 1;
+    //if (touch_data[1] != 255 && touch_data[1])
+    //    touchPoint->gesture = touch_data[1];
+    //else touchPoint->error = 1;
 
-    if (touch_data[3] != 255)
-        touchPoint->event = touch_data[3] >> 6;
-    else touchPoint->error = 1;
+    //if (touch_data[3] != 255)
+    //    touchPoint->event = touch_data[3] >> 6;
+    //else touchPoint->error = 1;
 
-    if (touch_data[4] != 255 && touch_data[4])
+    if (touch_data[4] != 255 && touch_data[4] != 0)
         touchPoint->touchX = touch_data[4];
-    else touchPoint->error = 1;
+    else {
+        error = 1;
+    }
 
-    if (touch_data[6] != 255 && touch_data[6])
+    if (touch_data[6] != 255 && touch_data[6] != 0)
         touchPoint->touchY = touch_data[6];
-    else touchPoint->error = 1;
+    else {
+        error = 1;
+    }
 
-    if (touch_data[7] != 255)
-        touchPoint->pressure = touch_data[7];
-    else touchPoint->error = 1;
 
+    //if (touch_data[7] != 255)
+    //    touchPoint->pressure = touch_data[7];
+    //else touchPoint->error = 1;
+
+    touchPoint->error = error;
+    touchPoint->errorCount = sqrt(pow(Xdistance,2) + pow(Ydistance,2));
+
+    error = 0;
     touchPoint->tab = tab;
+    tab = 0;
 
     touchInt = 0;
 
 
 
+    time++;
 
     return 0;
 }
