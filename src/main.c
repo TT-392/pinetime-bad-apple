@@ -57,22 +57,22 @@ int main(void) {
 
     struct touchPoints touchPoint = {0};
     bool backlight = 0;
-    while (1) {
-        touch_refresh(&touchPoint);
-        //if (touchPoint.error == 0) {
-            if (touchPoint.tab == 1) {
-                drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0x07FC);
-            } else if (touchPoint.tab == 2) {
-                drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0xff00);
-            } else {
-                drawSquare(touchPoint.touchX,touchPoint.touchY,touchPoint.touchX,touchPoint.touchY,0xffff);
-            }
-            drawNumber(140,50,touchPoint.errorCount,0xffff,0x0000,10,0);
-        //}
-    }
+    //while (1) {
+    //    touch_refresh(&touchPoint);
+    //    if (touchPoint.error == 0) {
+    //        if (touchPoint.tab == 1) {
+    //            drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0x07FC);
+    //        } else if (touchPoint.tab == 2) {
+    //            drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0xff00);
+    //        } else {
+    //            drawSquare(touchPoint.touchX,touchPoint.touchY,touchPoint.touchX,touchPoint.touchY,0xffff);
+    //        }
+    //        drawNumber(140,50,touchPoint.errorCount,0xffff,0x0000,10,0);
+    //    }
+    //}
 
-    if (touchPoint.error == 0) {
-    }
+    //if (touchPoint.error == 0) {
+    //}
 
 
 
@@ -84,7 +84,6 @@ int main(void) {
 
         statusBar_refresh();
         int error;
-        // do {
         //error = touch_refresh(&touchPoint1);
         wdt_feed();
 
@@ -103,25 +102,25 @@ int main(void) {
         int selectedItem = drawScrollMenu();
         if (selectedItem != -1) {
             display_scroll(320, 0, 0, 0);
-            if (selectedItem == 2) {
-                drawSquare(0, 20, 239, 319, 0x0000);
+            //if (selectedItem == 2) {
+            //    drawSquare(0, 20, 239, 319, 0x0000);
 
-                bool running = 1;
-                while (running) {
-                    wdt_feed();
-                    if (sl_nextFrameReady) {
-                        running = !sl(65, 0xffff, 0x0000);
-                        statusBar_refresh();
-                    }
-                }
-                scrollMenu_init();
+            //    bool running = 1;
+            //    while (running) {
+            //        wdt_feed();
+            //        if (sl_nextFrameReady) {
+            //            running = !sl(65, 0xffff, 0x0000);
+            //            statusBar_refresh();
+            //        }
+            //    }
+            //    scrollMenu_init();
 
-            }
-            if (selectedItem == 0) {
-                digitalWatch();
-                drawSquare(0, 0, 239, 319, 0x0000);
-                scrollMenu_init();
-            }
+            //}
+            //if (selectedItem == 0) {
+            //    digitalWatch();
+            //    drawSquare(0, 0, 239, 319, 0x0000);
+            //    scrollMenu_init();
+            //}
         }
     }
-    }
+}

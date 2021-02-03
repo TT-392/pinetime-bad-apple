@@ -32,6 +32,7 @@ int randnumber (int seed) {
 
 
 volatile static int tabY = 0;
+volatile static int tabX = 0;
 
 struct menu_item {
     uint8_t *icon;
@@ -132,6 +133,7 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
             }
 
             tabY = touchPoint1.touchY;
+            tabX = touchPoint1.touchX;
             cooldown = cpuTime();
         }
 
@@ -139,22 +141,10 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
         YatTouchUp = touchPoint1.touchY;
     }
 
-    if (touchPoint1.event == 0) {
-        noiseReject = 0;
-        if (cpuTime() > cooldown + 6400000) {
-            if (cpuTime() < debounceStatus + 12800000) {
-                int maxDeviate = 3;
-                if (YatStart + maxDeviate > YatTouchUp && YatStart - maxDeviate < YatTouchUp) {
-                    if (XatStart + maxDeviate > XatTouchUp && XatStart - maxDeviate < XatTouchUp) {
-                        return -1;
-                    }
-                }
-            }
 
-            debounceStatus = 0;
-        }
+    if (touchPoint1.tab == 1) {
+        return -1;
     }
-
     
     
     int touchY = 240 - touchPoint1.touchY;
@@ -202,6 +192,7 @@ void drawSelected (int filled, int selectedItem, int scrollPos) {
     for (int i = 0; i < 120; i++) {
         for (int lr = 0; lr < 2; lr++) {
             uint8_t displayColumn[49*2] = {};
+
             int x;
             if (lr)
                 x = 120 + i;
@@ -326,6 +317,7 @@ int drawScrollMenu () {
 
             drawMenuLine (lineNr, overWritingLineNr, writeU);
         }
+
         if (direction == -1) { // scrolling down
             int writeD = SSA;
             int lineNr = actualScroll;
@@ -336,8 +328,9 @@ int drawScrollMenu () {
 
         display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
     } else {
-        int selectedItem = ((tabY - 20) + actualScroll) / 55;
+        //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
 
+        int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
         drawSelected(100, selectedItem, actualScroll);
         return selectedItem;
     }

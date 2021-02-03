@@ -243,13 +243,13 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     //touchPoint->error = 0;
 
-    //if (touch_data[1] != 255 && touch_data[1])
-    //    touchPoint->gesture = touch_data[1];
-    //else touchPoint->error = 1;
+    if (touch_data[1] != 255 && touch_data[1])
+        touchPoint->gesture = touch_data[1];
+    else touchPoint->error = 1;
 
-    //if (touch_data[3] != 255)
-    //    touchPoint->event = touch_data[3] >> 6;
-    //else touchPoint->error = 1;
+    if (touch_data[3] != 255)
+        touchPoint->event = touch_data[3] >> 6;
+    else touchPoint->error = 1;
 
     if (touch_data[4] != 255 && touch_data[4] != 0)
         touchPoint->touchX = touch_data[4];
@@ -263,10 +263,9 @@ int touch_refresh(struct touchPoints* touchPoint) {
         error = 1;
     }
 
-
-    //if (touch_data[7] != 255)
-    //    touchPoint->pressure = touch_data[7];
-    //else touchPoint->error = 1;
+    if (touch_data[7] != 255)
+        touchPoint->pressure = touch_data[7];
+    else touchPoint->error = 1;
 
     touchPoint->error = error;
     touchPoint->errorCount = sqrt(pow(Xdistance,2) + pow(Ydistance,2));
