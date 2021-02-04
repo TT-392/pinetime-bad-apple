@@ -44,7 +44,7 @@ int clearance = 20;
 volatile static int tabY = 0;
 volatile static int tabX = 0;
 
-struct menuBMP {
+struct menuBMP { // (x2 - x1 + 1) % 8 should always be 0
     int x1;
     int y1;
     int x2;
@@ -60,19 +60,19 @@ struct menu_item {
 };
 
 struct menu_item menu_items[13] = { // first element reserved for text
-    {"clock",      2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x06fe, clockDigital}}},
-    {"test2",      2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"SL",         2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0xffff, trainIcon,  }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"uwu",        2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"wow",        2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, distorted,  }}},
-    {"test",       2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}},
-    {"this works", 2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, distorted,  }}},
-    {"yay",        2, {{70, 18, 0, 0, 0xffff},{0, 0, 55, 48, 0x00f0, termux,     }}}
+    {"clock",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x06fe, clockDigital}}},
+    {"test2",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"SL",         2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0xffff, trainIcon,  }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"uwu",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"wow",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, distorted,  }}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"this works", 2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, distorted,  }}},
+    {"yay",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}}
 };
 
 
@@ -101,107 +101,107 @@ struct menu_properties menu = {
 
 
 
-//static struct touchPoints touchPoint1;
-//
-////// Read the touch screen and turn that into a position where the user scrolled to 
-////int scrollPosition(int lowerBound, int upperBound, bool reset) {
-////    
-////}
+static struct touchPoints touchPoint1;
+
 //// Read the touch screen and turn that into a position where the user scrolled to 
 //int scrollPosition(int lowerBound, int upperBound, bool reset) {
-//    static int touchAtStart = 0;
-//    static int lastEvent = 0;
-//    static int scrollAtTouchUp = 0;
-//    static _Bool potentialTab = 0;
-//    static int counter = 0;
-//    static int eventCooldown = 0;
-//
-//    if (reset) {
-//        touchAtStart = 0;
-//        lastEvent = 0;
-//        scrollAtTouchUp = 0;
-//        potentialTab = 0;
-//        counter = 0;
-//        eventCooldown = 0;
-//        return 0;
-//    }
-//
-//
-//    int error;
-//    do {
-//        error = touch_refresh(&touchPoint1);
-//    } while (touchPoint1.touchY == 0 && error == 0);
-//
-//
-//    static uint64_t debounceStatus;
-//    static uint64_t cooldown = 0;
-//
-//    static int XatStart, YatStart, XatTouchUp, YatTouchUp;
-//
-//    static int noiseReject = 0;
-//
-//    if (touchPoint1.event != 0) { // if finger touches display
-//        noiseReject++;
-//        if (noiseReject > 1) { // to prevent ghost triggers when screen sleeps
-//            if (debounceStatus == 0) {
-//                debounceStatus = cpuTime();
-//                XatStart = touchPoint1.touchX;
-//                YatStart = touchPoint1.touchY;
-//                noiseReject = 0;
-//            }
-//
-//            tabY = touchPoint1.touchY;
-//            tabX = touchPoint1.touchX;
-//            cooldown = cpuTime();
-//        }
-//
-//        XatTouchUp = touchPoint1.touchX;
-//        YatTouchUp = touchPoint1.touchY;
-//    }
-//
-//
-//    if (touchPoint1.tab == 1) {
-//        return -1;
-//    }
 //    
-//    
-//    int touchY = 240 - touchPoint1.touchY;
-//
-//
-//    if (lastEvent == 0 && touchPoint1.event != 0) { // touch down
-//        touchAtStart = touchY;
-//    }
-//
-//    if (lastEvent != 0 && touchPoint1.event == 0) { // touch up
-//        scrollAtTouchUp += touchY - touchAtStart;
-//
-//    }
-//
-//
-//
-//    if (touchPoint1.event != 0) {
-//        if ((scrollAtTouchUp + touchY - touchAtStart) <= lowerBound) { // if lower bound is reached
-//            scrollAtTouchUp = lowerBound;
-//            touchAtStart = touchY; // switch these around to change performance
-//                                   // to leaving off when reached bound
-//
-//        } else if ((scrollAtTouchUp + touchY - touchAtStart) >= upperBound) {
-//            scrollAtTouchUp = upperBound;
-//            touchAtStart = touchY;                                    
-//        }
-//    }
-//
-//
-//    lastEvent = touchPoint1.event;
-//    
-//
-//    if (touchPoint1.event != 0) 
-//        return scrollAtTouchUp + touchY - touchAtStart;
-//    else
-//        return scrollAtTouchUp;
-//
 //}
-//
+// Read the touch screen and turn that into a position where the user scrolled to 
+int scrollPosition(int lowerBound, int upperBound, bool reset) {
+    static int touchAtStart = 0;
+    static int lastEvent = 0;
+    static int scrollAtTouchUp = 0;
+    static _Bool potentialTab = 0;
+    static int counter = 0;
+    static int eventCooldown = 0;
+
+    if (reset) {
+        touchAtStart = 0;
+        lastEvent = 0;
+        scrollAtTouchUp = 0;
+        potentialTab = 0;
+        counter = 0;
+        eventCooldown = 0;
+        return 0;
+    }
+
+
+    int error;
+    do {
+        error = touch_refresh(&touchPoint1);
+    } while (touchPoint1.touchY == 0 && error == 0);
+
+
+    static uint64_t debounceStatus;
+    static uint64_t cooldown = 0;
+
+    static int XatStart, YatStart, XatTouchUp, YatTouchUp;
+
+    static int noiseReject = 0;
+
+    if (touchPoint1.event != 0) { // if finger touches display
+        noiseReject++;
+        if (noiseReject > 1) { // to prevent ghost triggers when screen sleeps
+            if (debounceStatus == 0) {
+                debounceStatus = cpuTime();
+                XatStart = touchPoint1.touchX;
+                YatStart = touchPoint1.touchY;
+                noiseReject = 0;
+            }
+
+            tabY = touchPoint1.touchY;
+            tabX = touchPoint1.touchX;
+            cooldown = cpuTime();
+        }
+
+        XatTouchUp = touchPoint1.touchX;
+        YatTouchUp = touchPoint1.touchY;
+    }
+
+
+    if (touchPoint1.tab == 1) {
+        return -1;
+    }
+    
+    
+    int touchY = 240 - touchPoint1.touchY;
+
+
+    if (lastEvent == 0 && touchPoint1.event != 0) { // touch down
+        touchAtStart = touchY;
+    }
+
+    if (lastEvent != 0 && touchPoint1.event == 0) { // touch up
+        scrollAtTouchUp += touchY - touchAtStart;
+
+    }
+
+
+
+    if (touchPoint1.event != 0) {
+        if ((scrollAtTouchUp + touchY - touchAtStart) <= lowerBound) { // if lower bound is reached
+            scrollAtTouchUp = lowerBound;
+            touchAtStart = touchY; // switch these around to change performance
+                                   // to leaving off when reached bound
+
+        } else if ((scrollAtTouchUp + touchY - touchAtStart) >= upperBound) {
+            scrollAtTouchUp = upperBound;
+            touchAtStart = touchY;                                    
+        }
+    }
+
+
+    lastEvent = touchPoint1.event;
+    
+
+    if (touchPoint1.event != 0) 
+        return scrollAtTouchUp + touchY - touchAtStart;
+    else
+        return scrollAtTouchUp;
+
+}
+
 //void drawSelected (int filled, int selectedItem, int scrollPos) {
 //    int TFA = menu.top; // top fixed area
 //    int VSA = 220 + clearance;// vertical scrolling area
@@ -249,61 +249,55 @@ struct menu_properties menu = {
 //        }
 //    }
 //}
-//
-//// drawMenuLine is a function to draw a line of the menu
-//// lineNr = the scroll menu line Nr
-//// overWritingLineNr = the line Nr of the line that is currently on this line of display memory (for partial updates)
-//// screenY = the line of the display memory to write to
-//void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
-//    static _Bool init = 1;
-//
-//    if (init) {
-//        // convert text to bmp
-//        for (int i = 0; i < menu.length; i++) {
-//            menu.items[i].nameLength = 0;
-//            while (menu.items[i].name[menu.items[i].nameLength] != '\0') {
-//                menu.items[i].nameLength++;
-//            }
-//            menu.items[i].textBMP = malloc(16*menu.items[i].nameLength);
-//
-//            stringBMP (menu.items[i].textBMP, menu.items[i].name, menu.items[i].nameLength);
-//        }
-//        init = 0;
-//    }
-//    
-//
-//    if (overWritingLineNr / menu.item_size < menu.length && overWritingLineNr >= 0) {
-//        if (overWritingLineNr >= 0 && ((overWritingLineNr % menu.item_size) > 17 && (overWritingLineNr % menu.item_size) < 34))
-//            drawSquare(70, screenY, 70+8*menu.items[overWritingLineNr / menu.item_size].nameLength-1, screenY, 0x0000);
-//    }
-//
-//
-//
-//    if (lineNr / menu.item_size < menu.length && lineNr >= 0) {
-//        // if on a line where text should be drawn
-//        if ((lineNr % menu.item_size) >= 18 && (lineNr % menu.item_size) < 34) {
-//            uint16_t startX = 70;
-//            uint16_t endX = 70+8*menu.items[lineNr / menu.item_size].nameLength-1;
-//            drawMono(startX, screenY, endX, screenY, menu.items[lineNr / menu.item_size].textBMP + (menu.items[lineNr / menu.item_size].nameLength*(lineNr % menu.item_size - 18)), 0xffff, 0x0000);
-//        }
-//
-//
-//
-//        int iconLine = (lineNr % menu.item_size) - menu.icon_top;
-//        int overWritingIconLine = (overWritingLineNr % menu.item_size) - menu.icon_top;
-//
-//        if (iconLine < menu.icon_height && iconLine >= 0) {
-//            uint8_t *icon = menu.items[lineNr / menu.item_size].icon;
-//            int iconColor = menu.items[lineNr / menu.item_size].color;
-//            drawMono(0, screenY, menu.icon_width*8-1, screenY, icon + iconLine * menu.icon_width, iconColor, 0x0000);
-//        } else if (overWritingIconLine < menu.icon_height && overWritingIconLine >= 0){
-//            drawSquare(0, screenY, menu.icon_width*8-1, screenY, 0x0000);
-//        }
-//    } 
-//}
-//
-//
-//static int actualScroll = 0;
+
+// drawMenuLine is a function to draw a line of the menu
+// lineNr = the scroll menu line Nr
+// overWritingLineNr = the line Nr of the line that is currently on this line of display memory (for partial updates)
+// screenY = the line of the display memory to write to
+void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
+    struct menu_item menuItem = menu.items[lineNr / menu.item_size];
+    struct menu_item overWritingMenuItem = menu.items[overWritingLineNr / menu.item_size];
+
+    // get rid of old stuff
+    for (int i = 0; i < overWritingMenuItem.elements; i++) {
+        struct menuBMP bmp = overWritingMenuItem.element[i];
+        int overWritingItemY = overWritingLineNr % menu.item_size;
+        int itemY = lineNr % menu.item_size;
+
+        bool overWrite = 0;
+        // if there used to be stuff on this line
+        if (overWritingItemY >= bmp.y1 && overWritingItemY <= bmp.y2) {
+            for (int i = 0; i < menuItem.elements; i++) {
+                struct menuBMP newBMP = menuItem.element[i];
+
+                // if there is going to be stuff on this line
+                if (itemY >= newBMP.y1 && itemY <= newBMP.y2) {
+                    // if this item is not on the same location or of the same size
+                    if (newBMP.x1 != bmp.x1 || newBMP.x2 != bmp.x2) {
+                        overWrite = 1;
+                    }
+                } else {
+                    overWrite = 1;
+                }
+            }
+        }
+        if (overWrite) 
+            drawSquare(bmp.x1, screenY, bmp.x2, screenY, 0x0000);
+    }
+
+    // write new pixels
+    for (int i = 0; i < menuItem.elements; i++) {
+        int itemY = lineNr % menu.item_size;
+
+        struct menuBMP bmp = menuItem.element[i];
+        if (itemY >= bmp.y1 && itemY <= bmp.y2) {
+            int bmpOffset = (itemY - bmp.y1) * ((bmp.x2 - bmp.x1 + 1)/8);
+            drawMono(bmp.x1, screenY, bmp.x2, screenY, bmp.BMP + bmpOffset, bmp.color, 0x0000);
+        }
+    }
+}
+
+static int actualScroll = 0;
 //    
 //void drawScrollBar( );
 //
@@ -324,67 +318,60 @@ int scrollMenu_init () {
     }
     int Yoffset = 20;
 
-    for (int x = 0; x < 3; x++) {
-        for (int i = 0; i < menu.items[i].elements; i++) {
-            struct menuBMP *bmp = &menu.items[x].element[i];
-            drawMono(bmp->x1, bmp->y1 + Yoffset, bmp->x2, bmp->y2 + Yoffset, bmp->BMP, bmp->color, 0x0000);
-        }
-        Yoffset += menu.item_size;
-    }
 
-    
 
-//    for (int i = 0; i < 220; i++)
-//        drawMenuLine(i, -1, i+20);
-//    actualScroll = 0;
-//    scrollPosition(0,0,1);
+    for (int i = 0; i < 220; i++)
+        drawMenuLine(i, -1, i+20);
+    actualScroll = 0;
+    scrollPosition(0,0,1);
 }
-//
-//
-//int drawScrollMenu () {
-//    int TFA = menu.top; // top fixed area
-//    int VSA = 220 + clearance;// vertical scrolling area
-//
-//    static int direction = 1;
-//    static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
-//
-//
-//    int fingerScroll = scrollPosition(0, menu.length*55 - 220, 0);
-//    if (fingerScroll != -1) {
-//        if (fingerScroll > actualScroll)
-//            direction = 1;
-//        else if (fingerScroll < actualScroll)
-//            direction = -1;
-//        else
-//            direction = 0;
-//
-//        actualScroll+= direction;
-//
-//        int SSA = (actualScroll % VSA) + menu.top; // scroll start address
-//
-//        if (direction == 1) { // scrolling up (finger going up)
-//            int writeU = (actualScroll + VSA-1-clearance) % VSA + menu.top;
-//            int lineNr = actualScroll + VSA-1-clearance;
-//            int overWritingLineNr = lineNr - VSA;
-//
-//            drawMenuLine (lineNr, overWritingLineNr, writeU);
-//        }
-//
-//        if (direction == -1) { // scrolling down
-//            int writeD = SSA;
-//            int lineNr = actualScroll;
-//            int overWritingLineNr = lineNr + VSA;
-//
-//            drawMenuLine (lineNr, overWritingLineNr, writeD);
-//        }
-//
-//        display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
-//    } else {
-//        //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
-//
-//        int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
-//        drawSelected(100, selectedItem, actualScroll);
-//        return selectedItem;
-//    }
-//    return -1;
-//}
+
+
+int drawScrollMenu () {
+    int TFA = menu.top; // top fixed area
+    int VSA = 220 + clearance;// vertical scrolling area
+
+    static int direction = 1;
+    static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
+
+
+    int fingerScroll = scrollPosition(0, menu.length*55 - 220, 0);
+    if (fingerScroll != -1) {
+        if (fingerScroll > actualScroll)
+            direction = 1;
+        else if (fingerScroll < actualScroll)
+            direction = -1;
+        else
+            direction = 0;
+
+        actualScroll+= direction;
+
+        int SSA = (actualScroll % VSA) + menu.top; // scroll start address
+
+        if (direction == 1) { // scrolling up (finger going up)
+            int writeU = (actualScroll + VSA-1-clearance) % VSA + menu.top;
+            int lineNr = actualScroll + VSA-1-clearance;
+            int overWritingLineNr = lineNr - VSA;
+
+            drawMenuLine (lineNr, overWritingLineNr, writeU);
+        }
+
+        if (direction == -1) { // scrolling down
+            int writeD = SSA;
+            int lineNr = actualScroll;
+            int overWritingLineNr = lineNr + VSA;
+
+            drawMenuLine (lineNr, overWritingLineNr, writeD);
+        }
+
+        display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
+    }
+    //} else {
+    //    //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
+
+    //    int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
+    //    drawSelected(100, selectedItem, actualScroll);
+    //    return selectedItem;
+    //}
+    return -1;
+}

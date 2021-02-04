@@ -99,7 +99,7 @@ int main(void) {
 
 
 
-        //int selectedItem = drawScrollMenu();
+        int selectedItem = drawScrollMenu();
         //if (selectedItem != -1) {
             //display_scroll(320, 0, 0, 0);
             //if (selectedItem == 2) {
