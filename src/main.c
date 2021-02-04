@@ -100,27 +100,27 @@ int main(void) {
 
 
         int selectedItem = drawScrollMenu();
-        //if (selectedItem != -1) {
-            //display_scroll(320, 0, 0, 0);
-            //if (selectedItem == 2) {
-            //    drawSquare(0, 20, 239, 319, 0x0000);
+        if (selectedItem != -1) {
+            display_scroll(320, 0, 0, 0);
+            if (selectedItem == 2) {
+                drawSquare(0, 20, 239, 319, 0x0000);
 
-            //    bool running = 1;
-            //    while (running) {
-            //        wdt_feed();
-            //        if (sl_nextFrameReady) {
-            //            running = !sl(65, 0xffff, 0x0000);
-            //            statusBar_refresh();
-            //        }
-            //    }
-            //    scrollMenu_init();
+                bool running = 1;
+                while (running) {
+                    wdt_feed();
+                    if (sl_nextFrameReady) {
+                        running = !sl(65, 0xffff, 0x0000);
+                        statusBar_refresh();
+                    }
+                }
+                scrollMenu_init();
 
-            //}
-            //if (selectedItem == 0) {
-            //    digitalWatch();
-            //    drawSquare(0, 0, 239, 319, 0x0000);
-            //    scrollMenu_init();
-            //}
-        //}
+            }
+            if (selectedItem == 0) {
+                digitalWatch();
+                drawSquare(0, 0, 239, 319, 0x0000);
+                scrollMenu_init();
+            }
+        }
     }
 }

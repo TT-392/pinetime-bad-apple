@@ -8,14 +8,6 @@
 #include "icons.c"
 #include "semihost.h"
 
-// making stuff more readable:
-//  add to menu item: instead of icon and text, just 2 generic bitmaps with their location and size
-//  add variable saying which bitmap should be for text generation. or something like that
-//  add variable saying how many bmp's
-//      correction, those bmp's should be their own struct
-//  give each menu item a max of 5 bmp's
-
-
 
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
@@ -109,23 +101,10 @@ static struct touchPoints touchPoint1;
 //}
 // Read the touch screen and turn that into a position where the user scrolled to 
 int scrollPosition(int lowerBound, int upperBound, bool reset) {
-    static int touchAtStart = 0;
-    static int lastEvent = 0;
-    static int scrollAtTouchUp = 0;
-    static _Bool potentialTab = 0;
-    static int counter = 0;
-    static int eventCooldown = 0;
-
+    static int scroll = 0;
     if (reset) {
-        touchAtStart = 0;
-        lastEvent = 0;
-        scrollAtTouchUp = 0;
-        potentialTab = 0;
-        counter = 0;
-        eventCooldown = 0;
-        return 0;
+        scroll = 0;
     }
-
 
     int error;
     do {
@@ -133,73 +112,26 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
     } while (touchPoint1.touchY == 0 && error == 0);
 
 
-    static uint64_t debounceStatus;
-    static uint64_t cooldown = 0;
-
-    static int XatStart, YatStart, XatTouchUp, YatTouchUp;
-
-    static int noiseReject = 0;
-
-    if (touchPoint1.event != 0) { // if finger touches display
-        noiseReject++;
-        if (noiseReject > 1) { // to prevent ghost triggers when screen sleeps
-            if (debounceStatus == 0) {
-                debounceStatus = cpuTime();
-                XatStart = touchPoint1.touchX;
-                YatStart = touchPoint1.touchY;
-                noiseReject = 0;
-            }
-
-            tabY = touchPoint1.touchY;
-            tabX = touchPoint1.touchX;
-            cooldown = cpuTime();
-        }
-
-        XatTouchUp = touchPoint1.touchX;
-        YatTouchUp = touchPoint1.touchY;
-    }
-
-
     if (touchPoint1.tab == 1) {
         return -1;
     }
     
     
-    int touchY = 240 - touchPoint1.touchY;
-
-
-    if (lastEvent == 0 && touchPoint1.event != 0) { // touch down
-        touchAtStart = touchY;
-    }
-
-    if (lastEvent != 0 && touchPoint1.event == 0) { // touch up
-        scrollAtTouchUp += touchY - touchAtStart;
-
-    }
-
-
-
-    if (touchPoint1.event != 0) {
-        if ((scrollAtTouchUp + touchY - touchAtStart) <= lowerBound) { // if lower bound is reached
-            scrollAtTouchUp = lowerBound;
-            touchAtStart = touchY; // switch these around to change performance
-                                   // to leaving off when reached bound
-
-        } else if ((scrollAtTouchUp + touchY - touchAtStart) >= upperBound) {
-            scrollAtTouchUp = upperBound;
-            touchAtStart = touchY;                                    
+    static int lastStatus = 0;
+    static int lastTouchY = 0;
+    if (touchPoint1.fingerStatus == 1) {
+        if (lastStatus == 1) {
+            scroll += lastTouchY - touchPoint1.touchY;
         }
+        lastTouchY = touchPoint1.touchY;
     }
-
-
-    lastEvent = touchPoint1.event;
-    
-
-    if (touchPoint1.event != 0) 
-        return scrollAtTouchUp + touchY - touchAtStart;
-    else
-        return scrollAtTouchUp;
-
+    lastStatus = touchPoint1.fingerStatus;
+    if (scroll <= lowerBound) {
+        scroll = lowerBound;
+    } else if (scroll >= upperBound) {
+        scroll = upperBound;
+    }
+    return scroll;
 }
 
 void drawSelected (int filled, int selectedItem, int scrollPos) {
@@ -303,9 +235,7 @@ void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
 }
 
 static int actualScroll = 0;
-//    
-//void drawScrollBar( );
-//
+
 int scrollMenu_init () {
     // convert text to bmp
     for (int i = 0; i < menu.length; i++) {

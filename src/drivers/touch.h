@@ -9,7 +9,8 @@ struct touchPoints {
     uint8_t pressure;
     uint8_t error;
     uint8_t tab;
-    int errorCount;
+    uint8_t fingerStatus; // 1 = debounced touch
+   int errorCount;
 };
 
 

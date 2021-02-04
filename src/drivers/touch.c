@@ -23,6 +23,7 @@ static uint8_t tab = 0;
 static int errorCount = 0;
 static uint64_t timeDown = 0;
 static uint64_t time = 0;
+static uint64_t fingerStatus = 0;
 
 // event = 1: finger lifted from screen
 // event = 2; finger touching screen
@@ -77,6 +78,7 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
                 if (status == 2) {
                     tab = 1;
                 }
+                fingerStatus = 0;
             } 
 
             if (event == 2) {
@@ -94,6 +96,7 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
                 touchXdown = touchX;
                 touchYdown = touchY;
                 status = 2;
+                fingerStatus = 1;
             }
 
 
@@ -149,6 +152,7 @@ struct touchPoints {
     uint8_t pressure;
     uint8_t error;
     uint8_t tab;
+    uint8_t fingerStatus;
     int errorCount;
 };
 
@@ -269,6 +273,8 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     touchPoint->error = error;
     touchPoint->errorCount = sqrt(pow(Xdistance,2) + pow(Ydistance,2));
+    
+    touchPoint->fingerStatus = fingerStatus;
 
     error = 0;
     touchPoint->tab = tab;
