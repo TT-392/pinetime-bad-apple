@@ -8,6 +8,15 @@
 #include "icons.c"
 #include "semihost.h"
 
+// making stuff more readable:
+//  add to menu item: instead of icon and text, just 2 generic bitmaps with their location and size
+//  add variable saying which bitmap should be for text generation. or something like that
+//  add variable saying how many bmp's
+//      correction, those bmp's should be their own struct
+//  give each menu item a max of 5 bmp's
+
+
+
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
     return (unsigned int)(randomNumber/65536) % 32768;
@@ -30,6 +39,7 @@ int randnumber (int seed) {
 // commands lagg behind display write commands on the screen causing problems at
 // higher speed (these 20 lines are referred to as clearance in code)
 
+int clearance = 20;
 
 volatile static int tabY = 0;
 volatile static int tabX = 0;
@@ -185,38 +195,48 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
 }
 
 void drawSelected (int filled, int selectedItem, int scrollPos) {
-    int Ytop = (selectedItem*55) % 275 + 20; 
-    int Ybottom = (selectedItem*55) % 275 + 48 + 20; 
+    int TFA = menu.top; // top fixed area
+    int VSA = 220 + clearance;// vertical scrolling area
+
+    int Ytop = (selectedItem*menu.item_size) % VSA + 20; 
+    int Ybottom = (selectedItem*menu.item_size) % VSA + menu.item_size + 20; 
 
 
+    // expanding out from the middle
     for (int i = 0; i < 120; i++) {
-        for (int lr = 0; lr < 2; lr++) {
-            uint8_t displayColumn[49*2] = {};
-
-            int x;
-            if (lr)
-                x = 120 + i;
+        for (int leftRight = 0; leftRight < 2; leftRight++) {
+            int columnX; 
+            if (leftRight)
+                columnX = 120 + i; // right
             else 
-                x = 119 - i;
+                columnX = 119 - i; // left
 
-            for (int y = 0; y < 48; y++) {
-                if (x < 55 && (menu.items[selectedItem].icon[y*7 + x/8] & 1 << (x % 8))) {
-                    displayColumn[y*2] = menu.items[selectedItem].color >> 8;
-                    displayColumn[y*2 + 1] = menu.items[selectedItem].color & 0xff;
+            uint8_t column[menu.item_size*2]; // 2 bytes per pixel
 
-                } else if (y >= 18 && y < 34 && x >= 70 && x <= (70 + 8*menu.items[selectedItem].nameLength - 1) &&
-                        menu.items[selectedItem].textBMP[(y-18)*menu.items[selectedItem].nameLength + (x-70)/8] & 1 << ((x-70) % 8)) {
 
-                    displayColumn[y*2] = 0xff;
-                    displayColumn[y*2 + 1] = 0xff;
+            for (int y = 0; y < menu.item_size; y++) {
+                // add the icon
+                if ((columnX < (menu.icon_width*8)) && y < menu.icon_height) {
+                    // if this pixel in the mono bitmap is a 1
+                    if ((menu.items[selectedItem].icon[y*7 + columnX/8] & 1 << (columnX % 8))) {
+                        column[y*2] = menu.items[selectedItem].color >> 8;
+                        column[y*2 + 1] = menu.items[selectedItem].color & 0xff;
+                    }
+                }
 
-                } else {
-                    displayColumn[y*2] = 0x08;
-                    displayColumn[y*2 + 1] = 0x41;
+                // add the text
+                else if (y >= 18 && y < 34 && columnX >= 70 && columnX <= (70 + 8*menu.items[selectedItem].nameLength - 1)) { 
+                    if (menu.items[selectedItem].textBMP[(y-18)*menu.items[selectedItem].nameLength + (columnX-70)/8] & 1 << ((columnX-70) % 8)) {
+                        column[y*2] = 0xff;
+                        column[y*2 + 1] = 0xff;
+                    } else {
+                        column[y*2] = 0x08;
+                        column[y*2 + 1] = 0x41;
+                    }
                 }
             }
 
-            drawBitmap (x, Ytop, x, Ybottom, displayColumn);
+            drawBitmap (columnX, Ytop, columnX, Ybottom, column);
             nrf_delay_us(10*i);
         }
     }
@@ -288,8 +308,6 @@ int scrollMenu_init () {
 
 
 int drawScrollMenu () {
-
-    int clearance = 20; // see explaination at beginning of file
     int TFA = menu.top; // top fixed area
     int VSA = 220 + clearance;// vertical scrolling area
 
