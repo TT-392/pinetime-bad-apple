@@ -202,53 +202,58 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
 
 }
 
-//void drawSelected (int filled, int selectedItem, int scrollPos) {
-//    int TFA = menu.top; // top fixed area
-//    int VSA = 220 + clearance;// vertical scrolling area
-//
-//    int Ytop = (selectedItem*menu.item_size) % VSA + 20; 
-//    int Ybottom = (selectedItem*menu.item_size) % VSA + menu.item_size + 20; 
-//
-//
-//    // expanding out from the middle
-//    for (int i = 0; i < 120; i++) {
-//        for (int leftRight = 0; leftRight < 2; leftRight++) {
-//            int columnX; 
-//            if (leftRight)
-//                columnX = 120 + i; // right
-//            else 
-//                columnX = 119 - i; // left
-//
-//            uint8_t column[menu.item_size*2]; // 2 bytes per pixel
-//
-//
-//            for (int y = 0; y < menu.item_size; y++) {
-//                // add the icon
-//                if ((columnX < (menu.icon_width*8)) && y < menu.icon_height) {
-//                    // if this pixel in the mono bitmap is a 1
-//                    if ((menu.items[selectedItem].icon[y*7 + columnX/8] & 1 << (columnX % 8))) {
-//                        column[y*2] = menu.items[selectedItem].color >> 8;
-//                        column[y*2 + 1] = menu.items[selectedItem].color & 0xff;
-//                    }
-//                }
-//
-//                // add the text
-//                else if (y >= 18 && y < 34 && columnX >= 70 && columnX <= (70 + 8*menu.items[selectedItem].nameLength - 1)) { 
-//                    if (menu.items[selectedItem].textBMP[(y-18)*menu.items[selectedItem].nameLength + (columnX-70)/8] & 1 << ((columnX-70) % 8)) {
-//                        column[y*2] = 0xff;
-//                        column[y*2 + 1] = 0xff;
-//                    } else {
-//                        column[y*2] = 0x08;
-//                        column[y*2 + 1] = 0x41;
-//                    }
-//                }
-//            }
-//
-//            drawBitmap (columnX, Ytop, columnX, Ybottom, column);
-//            nrf_delay_us(10*i);
-//        }
-//    }
-//}
+void drawSelected (int filled, int selectedItem, int scrollPos) {
+    int TFA = menu.top; // top fixed area
+    int VSA = 220 + clearance;// vertical scrolling area
+
+    struct menu_item menuItem = menu.items[selectedItem];
+
+
+    // expanding out from the middle
+    for (int i = 0; i < 120; i++) {
+        for (int leftRight = 0; leftRight < 2; leftRight++) {
+            int columnX; 
+            if (leftRight)
+                columnX = 120 + i; // right
+            else 
+                columnX = 119 - i; // left
+
+            uint8_t column[menu.item_size*2]; // 2 bytes per pixel
+
+            for (int y = 0; y < menu.item_size; y++) {
+                uint16_t color = 0x0841;
+                for (int element = 0; element < menuItem.elements; element++) {
+                    struct menuBMP bmp = menuItem.element[element];
+
+                    if (columnX >= bmp.x1 && columnX <= bmp.x2) {
+                        if (y >= bmp.y1 && y <= bmp.y2) {
+                            int bmpOffset = (y - bmp.y1) * ((bmp.x2 - bmp.x1 + 1)/8) + ((columnX-bmp.x1)/8);
+                            if (bmp.BMP[bmpOffset] & 1 << ((columnX-bmp.x1) % 8)) {
+                                color = bmp.color;
+                            }
+                        }
+                    }
+                }
+                column[y*2] = color >> 8;
+                column[y*2 + 1] = color & 0xff;
+            }
+
+            int Ytop = (selectedItem * menu.item_size) % VSA;
+            int Ybottom = (selectedItem * menu.item_size) % VSA + menu.item_size; 
+
+            if (Ybottom <= VSA) 
+                drawBitmap (columnX, Ytop + menu.top, columnX, Ybottom + menu.top, column);
+            else {
+                drawBitmap (columnX, Ytop + menu.top, columnX, VSA + menu.top, column);
+                drawBitmap (columnX, menu.top, columnX, Ybottom % VSA + menu.top, column + 2 * (VSA - Ytop));
+            }
+
+
+
+            nrf_delay_us(10*i);
+        }
+    }
+}
 
 // drawMenuLine is a function to draw a line of the menu
 // lineNr = the scroll menu line Nr
@@ -365,13 +370,12 @@ int drawScrollMenu () {
         }
 
         display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
-    }
-    //} else {
-    //    //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
+    } else {
+        //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
 
-    //    int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
-    //    drawSelected(100, selectedItem, actualScroll);
-    //    return selectedItem;
-    //}
+        int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
+        drawSelected(100, selectedItem, actualScroll);
+        return selectedItem;
+    }
     return -1;
 }
