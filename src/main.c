@@ -99,9 +99,9 @@ int main(void) {
 
 
 
-        int selectedItem = drawScrollMenu();
-        if (selectedItem != -1) {
-            display_scroll(320, 0, 0, 0);
+        //int selectedItem = drawScrollMenu();
+        //if (selectedItem != -1) {
+            //display_scroll(320, 0, 0, 0);
             //if (selectedItem == 2) {
             //    drawSquare(0, 20, 239, 319, 0x0000);
 
@@ -121,6 +121,6 @@ int main(void) {
             //    drawSquare(0, 0, 239, 319, 0x0000);
             //    scrollMenu_init();
             //}
-        }
+        //}
     }
 }
