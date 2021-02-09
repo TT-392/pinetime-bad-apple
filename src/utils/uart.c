@@ -42,3 +42,28 @@ void uart_init() {
 
 }
 
+void uart_send_number(int number) {
+    if (number == 0) {
+        char* numString = "0\n\r";
+        uart_send(numString);
+        return;
+    }
+
+    int numLength = 0;
+    int tempNumber = number;
+    while (tempNumber > 0) {
+        tempNumber /= 10;
+        numLength++;
+    }
+    char numString[numLength + 3];
+    numString[numLength] = '\n';
+    numString[numLength+1] = '\r';
+    numString[numLength+2] = '\0';
+    
+    for (int i = numLength-1; i >= 0; i--) {
+        numString[i] = '0' + number % 10;
+        number /= 10;
+    }
+    uart_send(numString);
+}
+
