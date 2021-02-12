@@ -21,9 +21,9 @@ static int timeOutCount = 0;
 static bool touchInt = 0;
 static uint8_t tab = 0;
 static int errorCount = 0;
-static uint64_t timeDown = 0;
 static uint64_t time = 0;
 static uint64_t fingerStatus = 0;
+static _Bool newData = 0;
 
 // event = 1: finger lifted from screen
 // event = 2; finger touching screen
@@ -48,10 +48,15 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     // end of a data read
     if (NRF_TWIM1->EVENTS_LASTRX) {
         NRF_TWIM1->EVENTS_LASTRX = 0;
+        
 
         // detect faulty data
         if (touch_data[4] != 255 && touch_data[4] != 0 &&
             touch_data[6] != 255 && touch_data[6] != 0) {
+            newData = 1;
+
+            if (touch_data[1] == 5)
+                tab = 1;
 
             static uint8_t lastEvent = 0;
             static uint8_t touch = 0;
@@ -65,10 +70,6 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
             static int status = 0;
 
             if (event == 0 && lastEvent == 1) { // finger actually going up
-                timeDown = /*!timeDown;//*/time - timeWhenDown;
-                if (touch == 0) {
-                    timeDown = 0;
-                }
                 //if (timeDown > 10000000) {
                 //    display_backlight(255);
                 //} else {
@@ -76,7 +77,7 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
                 //}
                 touch = 0;
                 if (status == 2) {
-                    tab = 1;
+                    //tab = 1;
                 }
                 fingerStatus = 0;
             } 
@@ -92,7 +93,7 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
             if (event == 2 && touch == 0) { // finger actually going down
                 touch = 1;
                 timeWhenDown = time; 
-                tab = 2;
+                //tab = 2;
                 touchXdown = touchX;
                 touchYdown = touchY;
                 status = 2;
@@ -104,7 +105,6 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
         } else {
             error = 1;
         }
-
     }
 }
 
@@ -153,6 +153,7 @@ struct touchPoints {
     uint8_t error;
     uint8_t tab;
     uint8_t fingerStatus;
+    bool New;
     int errorCount;
 };
 
@@ -275,6 +276,9 @@ int touch_refresh(struct touchPoints* touchPoint) {
     touchPoint->errorCount = sqrt(pow(Xdistance,2) + pow(Ydistance,2));
     
     touchPoint->fingerStatus = fingerStatus;
+
+    touchPoint->New = newData;
+    newData = 0;
 
     error = 0;
     touchPoint->tab = tab;
