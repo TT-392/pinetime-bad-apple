@@ -34,7 +34,7 @@ void uart_init() {
     NRF_UARTE0->CONFIG = (0 << UARTE_CONFIG_HWFC_Pos) |
         (0 << UARTE_CONFIG_PARITY_Pos);
 
-    NRF_UARTE0->BAUDRATE = UARTE_BAUDRATE_BAUDRATE_Baud9600 << UARTE_BAUDRATE_BAUDRATE_Pos;
+    NRF_UARTE0->BAUDRATE = UARTE_BAUDRATE_BAUDRATE_Baud115200 << UARTE_BAUDRATE_BAUDRATE_Pos;
     NRF_UARTE0->PSEL.TXD = PIN_TXD;
     NRF_UARTE0->ENABLE = UARTE_ENABLE_ENABLE_Enabled << UARTE_ENABLE_ENABLE_Pos;
 
@@ -44,10 +44,18 @@ void uart_init() {
 
 void uart_send_number(int number) {
     if (number == 0) {
-        char* numString = "0\n\r";
+        char numString[] = "0\n\r";
         uart_send(numString);
         return;
     }
+
+    bool negative = 0;
+
+    if (number < 0) {
+        negative = 1;
+        number = -number;
+    }
+
 
     int numLength = 0;
     int tempNumber = number;
@@ -55,13 +63,16 @@ void uart_send_number(int number) {
         tempNumber /= 10;
         numLength++;
     }
-    char numString[numLength + 3];
-    numString[numLength] = '\n';
-    numString[numLength+1] = '\r';
-    numString[numLength+2] = '\0';
+    char numString[numLength + 3 + negative];
+    if (negative) 
+        numString[0] = '-';
+
+    numString[numLength + negative] = '\n';
+    numString[numLength+1 + negative] = '\r';
+    numString[numLength+2 + negative] = '\0';
     
     for (int i = numLength-1; i >= 0; i--) {
-        numString[i] = '0' + number % 10;
+        numString[i + negative] = '0' + number % 10;
         number /= 10;
     }
     uart_send(numString);

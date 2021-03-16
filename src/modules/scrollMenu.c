@@ -5,9 +5,12 @@
 #include "display_print.h"
 #include "nrf_delay.h"
 #include <stdlib.h>
+#include <math.h>
 #include "icons.c"
 #include "semihost.h"
+#include "uart.h"
 
+#define SCREENTAB -1
 
 int randnumber (int seed) {
     int randomNumber = seed * 1103515245 + 12345;
@@ -67,7 +70,6 @@ struct menu_item menu_items[13] = { // first element reserved for text
     {"yay",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}}
 };
 
-
 struct menu_properties {
     uint16_t top;
     uint16_t bottom;
@@ -91,8 +93,6 @@ struct menu_properties menu = {
 };
 
 
-
-
 static struct touchPoints touchPoint1;
 
 //// Read the touch screen and turn that into a position where the user scrolled to 
@@ -101,36 +101,74 @@ static struct touchPoints touchPoint1;
 //}
 // Read the touch screen and turn that into a position where the user scrolled to 
 int scrollPosition(int lowerBound, int upperBound, bool reset) {
-    static int scroll = 0;
+    static double scroll = 0;
     if (reset) {
         scroll = 0;
     }
 
     int error;
-    do {
-        error = touch_refresh(&touchPoint1);
-    } while (touchPoint1.touchY == 0 && error == 0);
+    error = touch_refresh(&touchPoint1);
+
+    if (touchPoint1.touchY == 0) // sometimes the touch controller incorrectly returns 0 0 as coordinate
+        error = 1;
 
 
-    if (touchPoint1.tab == 1) {
-        return -1;
+    if (!error) {
+        if (touchPoint1.tab == 1) {
+            return SCREENTAB;
+        }
+
+        tabY = touchPoint1.touchY;
     }
-    
-    
+
     static int lastStatus = 0;
-    static int lastTouchY = 0;
-    if (touchPoint1.fingerStatus == 1) {
+    static double scrollSpeed = 0;
+    if (touchPoint1.New && !error && touchPoint1.fingerStatus == 1) {
+        static int lastTouchY = 0;
+        static uint64_t lastTime = 0;
+        uint64_t sampleTime = cpuTime() - lastTime;
+
         if (lastStatus == 1) {
             scroll += lastTouchY - touchPoint1.touchY;
+            //if ((lastTouchY - touchPoint1.touchY) > 0)
+
+            if (lastTouchY - touchPoint1.touchY) {
+                scrollSpeed = (lastTouchY - touchPoint1.touchY) / (double)sampleTime;
+            }
         }
         lastTouchY = touchPoint1.touchY;
+
+        lastTime = cpuTime();
+    } else if (touchPoint1.fingerStatus != 1) {
+        static uint64_t lastTime = 0;
+        uint64_t sampleTime = cpuTime() - lastTime;
+
+        //uart_send_number(scrollSpeed*100000);
+
+        //scroll += scrollSpeed * (double)sampleTime;//(double)sampleTime;
+        if (scrollSpeed > 0) {
+            scrollSpeed -= 1;
+            if (scrollSpeed < 0)
+                scrollSpeed = 0;
+        } else if (scrollSpeed < 0) {
+            scrollSpeed += 1;
+            if (scrollSpeed > 0)
+                scrollSpeed = 0;
+        }
+            
+
+        lastTime = cpuTime();
     }
+
+
     lastStatus = touchPoint1.fingerStatus;
+
     if (scroll <= lowerBound) {
         scroll = lowerBound;
     } else if (scroll >= upperBound) {
         scroll = upperBound;
     }
+
     return scroll;
 }
 
@@ -234,7 +272,7 @@ void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
     }
 }
 
-static int actualScroll = 0;
+static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
 
 int scrollMenu_init () {
     // convert text to bmp
@@ -251,12 +289,10 @@ int scrollMenu_init () {
         menu.items[i].element[0].x2 = menu.items[i].element[0].x1 + 8 * textLength - 1;
 
     }
-    int Yoffset = 20;
-
-
 
     for (int i = 0; i < 220; i++)
         drawMenuLine(i, -1, i+20);
+
     actualScroll = 0;
     scrollPosition(0,0,1);
 }
@@ -267,11 +303,10 @@ int drawScrollMenu () {
     int VSA = 220 + clearance;// vertical scrolling area
 
     static int direction = 1;
-    static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
 
 
     int fingerScroll = scrollPosition(0, menu.length*55 - 220, 0);
-    if (fingerScroll != -1) {
+    if (fingerScroll != SCREENTAB) {
         if (fingerScroll > actualScroll)
             direction = 1;
         else if (fingerScroll < actualScroll)

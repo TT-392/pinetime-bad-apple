@@ -19,6 +19,7 @@
 #include "date.h"
 #include "touch.h"
 #include "keyboard.c"
+#include "uart.h"
 
 static bool toggle = 1;
 
@@ -31,12 +32,19 @@ int main(void) {
     sysTick_init();
     //date_init();
     bool osRunning = 1;
-    nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
+    nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
     drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
-    //    digitalWatch();
+
+    uart_init();
+
+    int x = 0;
+
+
+
+
 
 
 

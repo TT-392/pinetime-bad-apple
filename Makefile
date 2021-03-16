@@ -24,6 +24,7 @@ SRC_FILES += \
   $(PROJ_DIR)/utils/systick.c \
   $(PROJ_DIR)/utils/display_print.c \
   $(PROJ_DIR)/utils/calctime.c \
+  $(PROJ_DIR)/utils/uart.c \
   $(PROJ_DIR)/utils/battery.c \
   $(PROJ_DIR)/utils/date.c \
   $(PROJ_DIR)/utils/geometry.c \
