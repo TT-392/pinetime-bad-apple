@@ -6,8 +6,8 @@ SDK_ROOT := ../sdk
 PROJ_DIR := ./src
 GNU_INSTALL_ROOT := /bin/
 
-#$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
-#  LINKER_SCRIPT  := $(PROJ_DIR)/external/nordic/ble_app_blinky_c_gcc_nrf52.ld
+$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
+  LINKER_SCRIPT_OTA  := $(PROJ_DIR)/external/nordic/ble_app_blinky_c_gcc_nrf52.ld
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
   LINKER_SCRIPT  := $(PROJ_DIR)/external/nordic/blinky_gcc_nrf52.ld
 #$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
@@ -229,7 +229,7 @@ ASMFLAGS += -DSOFTDEVICE_PRESENT
 
 # Linker flags
 LDFLAGS += $(OPT)
-LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
+LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # let linker dump unused sections

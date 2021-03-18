@@ -1,0 +1,3 @@
+LDFLAGS += -T$(LINKER_SCRIPT)
+
+include Makefile
