@@ -114,11 +114,13 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
 
 
     if (!error) {
-        if (touchPoint1.tab == 1) {
-            return SCREENTAB;
+        if (touchPoint1.New) {
+            if (touchPoint1.tab == 1) {
+                tabY = touchPoint1.touchY;
+                return SCREENTAB;
+            }
         }
 
-        tabY = touchPoint1.touchY;
     }
 
     static int lastStatus = 0;
@@ -169,7 +171,10 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
         scroll = upperBound;
     }
 
-    return scroll;
+    if (scroll >= 0)
+        return scroll;
+    else
+        return 0;
 }
 
 void drawSelected (int filled, int selectedItem, int scrollPos) {
@@ -294,8 +299,8 @@ int scrollMenu_init () {
         drawMenuLine(i, -1, i+20);
 
     actualScroll = 0;
-    scrollPosition(0,0,1);
 }
+
 
 
 int drawScrollMenu () {

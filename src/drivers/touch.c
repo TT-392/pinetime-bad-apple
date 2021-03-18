@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+
 #define TOUCH_I2C_DEVICE (0x15)
 
 #define PIN_SCL        (7)
@@ -34,7 +35,6 @@ static _Bool newData = 0;
 // not be counted as a lifting finger
 
 static bool backlight = 1;
-static uint64_t timeWhenDown = 0;
 static uint8_t Xdistance = 0;
 static uint8_t Ydistance = 0;
 void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
@@ -55,13 +55,17 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
             touch_data[6] != 255 && touch_data[6] != 0) {
             newData = 1;
 
-            if (touch_data[1] == 5)
+            static int lastTab = 0;
+
+            if (touch_data[1] == 5 && lastTab == 0)
                 tab = 1;
+
+            lastTab = touch_data[1] == 5;
+
+
 
             static uint8_t lastEvent = 0;
             static uint8_t touch = 0;
-            static uint8_t touchXdown = 0;
-            static uint8_t touchYdown = 0;
             uint8_t touchX = touch_data[4];
             uint8_t touchY = touch_data[6];
 
@@ -70,33 +74,13 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
             static int status = 0;
 
             if (event == 0 && lastEvent == 1) { // finger actually going up
-                //if (timeDown > 10000000) {
-                //    display_backlight(255);
-                //} else {
-                //    display_backlight(0);
-                //}
                 touch = 0;
-                if (status == 2) {
-                    //tab = 1;
-                }
                 fingerStatus = 0;
             } 
 
-            if (event == 2) {
-                if (status == 2) {
-                    if (sqrt(pow(touchXdown - touchX,2) + pow(touchYdown - touchY,2)) > 5) {
-                        status = 0;
-                    }
-                }
-            }
 
             if (event == 2 && touch == 0) { // finger actually going down
                 touch = 1;
-                timeWhenDown = time; 
-                //tab = 2;
-                touchXdown = touchX;
-                touchYdown = touchY;
-                status = 2;
                 fingerStatus = 1;
             }
 
@@ -250,11 +234,11 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     if (touch_data[1] != 255 && touch_data[1])
         touchPoint->gesture = touch_data[1];
-    else touchPoint->error = 1;
+    else error = 1;
 
     if (touch_data[3] != 255)
         touchPoint->event = touch_data[3] >> 6;
-    else touchPoint->error = 1;
+    else error = 1;
 
     if (touch_data[4] != 255 && touch_data[4] != 0)
         touchPoint->touchX = touch_data[4];
@@ -270,7 +254,7 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     if (touch_data[7] != 255)
         touchPoint->pressure = touch_data[7];
-    else touchPoint->error = 1;
+    else error = 1;
 
     touchPoint->error = error;
     touchPoint->errorCount = sqrt(pow(Xdistance,2) + pow(Ydistance,2));
@@ -279,6 +263,11 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     touchPoint->New = newData;
     newData = 0;
+
+    
+
+
+
 
     error = 0;
     touchPoint->tab = tab;
