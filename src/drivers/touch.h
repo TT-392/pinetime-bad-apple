@@ -18,3 +18,8 @@ struct touchPoints {
 int touch_init();
 
 int touch_refresh(struct touchPoints* touchPoint);
+
+// only one can be subscribed for now
+void subscribeTouchInterrupt(void function());
+
+

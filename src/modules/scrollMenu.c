@@ -299,15 +299,6 @@ int scrollMenu_init () {
         drawMenuLine(i, -1, i+20);
 
     actualScroll = 0;
-    touch_init();
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
-    scrollPosition(0,0,1);
     scrollPosition(0,0,1);
 }
 

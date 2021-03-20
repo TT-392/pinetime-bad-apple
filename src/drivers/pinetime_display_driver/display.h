@@ -1,4 +1,5 @@
 #pragma once
+#include "stdint.h"
 
 /*
  * Function to init the display, 

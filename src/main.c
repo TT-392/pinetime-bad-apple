@@ -20,6 +20,7 @@
 #include "touch.h"
 #include "keyboard.c"
 #include "uart.h"
+#include "sleep.h"
 
 static bool toggle = 1;
 
@@ -86,30 +87,21 @@ int main(void) {
 
 
     //statusBar_refresh();
+    touch_init();
 
     scrollMenu_init();
     while(osRunning) {
 
         statusBar_refresh();
         int error;
-        //error = touch_refresh(&touchPoint1);
         wdt_feed();
-
-
-
-        //if (!nrf_gpio_pin_read(13)) {
-        //    display_backlight(255);
-        //}
-        //else {
-        //    display_backlight(0);
-        //}
-
 
 
 
         int selectedItem = drawScrollMenu();
         if (selectedItem != -1) {
             display_scroll(320, 0, 0, 0);
+
             if (selectedItem == 2) {
                 drawSquare(0, 20, 239, 319, 0x0000);
 
@@ -128,6 +120,12 @@ int main(void) {
                 digitalWatch();
                 drawSquare(0, 0, 239, 319, 0x0000);
                 scrollMenu_init();
+            }
+            if (selectedItem == 1) {
+                sleep();
+                drawSquare(0, 0, 239, 319, 0x0000);
+                scrollMenu_init();
+                display_backlight(255);
             }
         }
     }

@@ -92,14 +92,22 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     }
 }
 
+static void (*touchInterrupt)();
+static bool interruptInitialized = 0;
+
 void GPIOTE_IRQHandler(void) {
     if (NRF_GPIOTE->EVENTS_IN[2]) {
         NRF_GPIOTE->EVENTS_IN[2] = 0;
-        drawSquare(0, 0, 239, 319, 0x0000);
+        if (interruptInitialized) {
+            touchInterrupt();
+        }
 
-        //backlight = !backlight;
-        //display_backlight(255*backlight);
     } 
+}
+
+void subscribeTouchInterrupt(void function()) {
+    touchInterrupt = function; 
+    interruptInitialized = 1;
 }
 
 // twim timeout interrupt
@@ -156,7 +164,7 @@ int touch_init() {
     // create GPIOTE event for the int pin
     NRF_GPIOTE->CONFIG[2] = GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos |
         1 << GPIOTE_CONFIG_POLARITY_Pos |
-        /*PIN_TouchInt */13 << GPIOTE_CONFIG_PSEL_Pos;
+        PIN_TouchInt  << GPIOTE_CONFIG_PSEL_Pos;
 
     // setup interrupt
     NRF_GPIOTE->INTENSET = 1 << 2;
