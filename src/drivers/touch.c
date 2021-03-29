@@ -4,7 +4,6 @@
 #include "nrf_gpio.h"
 #include "display_defines.h"
 #include "display.h"
-#include "semihost.h"
 #include "systick.h"
 #include <math.h>
 #include <stdlib.h>
@@ -92,6 +91,8 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     }
 }
 
+
+
 static void (*touchInterrupt)();
 static bool interruptInitialized = 0;
 
@@ -151,6 +152,7 @@ struct touchPoints {
 
 static volatile uint8_t registerNr = 0;
 
+
 int touch_init() { 
     // send a reset
     nrf_gpio_cfg_output(10);
@@ -160,6 +162,10 @@ int touch_init() {
     nrf_delay_ms(5);
     nrf_gpio_pin_write(10,1);
     nrf_delay_ms(50);
+
+    
+
+
 
     // create GPIOTE event for the int pin
     NRF_GPIOTE->CONFIG[2] = GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos |
@@ -176,7 +182,7 @@ int touch_init() {
     NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
 
     nrf_gpio_cfg_input(PIN_TouchInt, NRF_GPIO_PIN_NOPULL);
-    nrf_gpio_cfg_input(PIN_SDA, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(PIN_SCL, NRF_GPIO_PIN_PULLUP);
     nrf_gpio_cfg_input(PIN_SDA, NRF_GPIO_PIN_PULLUP);
 
     NRF_TWIM1->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K400 << TWIM_FREQUENCY_FREQUENCY_Pos;
@@ -227,6 +233,16 @@ int touch_init() {
     return 0;
 }
 
+void touch_sleep() {
+    NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
+    NRF_TIMER1->TASKS_STOP = 1;
+}
+
+void touch_wake() {
+    NRF_TIMER1->TASKS_START = 1;
+    NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Enabled << TWI_ENABLE_ENABLE_Pos;
+}
+
 
 int touch_refresh(struct touchPoints* touchPoint) {
     static bool once = 1;
@@ -271,11 +287,6 @@ int touch_refresh(struct touchPoints* touchPoint) {
 
     touchPoint->New = newData;
     newData = 0;
-
-    
-
-
-
 
     error = 0;
     touchPoint->tab = tab;

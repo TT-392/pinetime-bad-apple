@@ -14,9 +14,13 @@ void sleep() {
     display_backlight(0);
     subscribeTouchInterrupt(wakeInterrupt);
 
+    touch_sleep();
 
     while (!wake) {
         __WFI();
     }
+
+    
+    touch_wake();
 
 }
