@@ -26,7 +26,7 @@ void i2c_setup(volatile uint8_t *data) {
 
     // setup interrupts
     NRF_TWIM1->INTEN = 0;
-    NRF_TWIM1->INTENSET = TWIM_INTENSET_TXSTARTED_Msk | TWIM_INTENSET_LASTRX_Msk;
+    NRF_TWIM1->INTENSET = TWIM_INTENSET_TXSTARTED_Msk | TWIM_INTENSET_LASTRX_Msk | TWIM_INTENSET_STOPPED_Msk;
 
     NVIC_SetPriority(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, 2);
     NVIC_ClearPendingIRQ(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn);
@@ -76,11 +76,13 @@ void subscribeAndInitI2CInterrupt(void function()) {
 
 static bool i2c_stop = 0;
 void i2c_sleep() {
-    NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
-    NRF_TIMER1->TASKS_STOP = 1;
+    i2c_stop = 1;
 }
 
 void i2c_wake() {
+    NRF_TWIM1->EVENTS_LASTRX = 0;
+    NRF_TWIM1->EVENTS_TXSTARTED = 0;
+
     NRF_TIMER1->TASKS_START = 1;
     NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Enabled << TWI_ENABLE_ENABLE_Pos;
 }
@@ -101,6 +103,10 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
     if (NRF_TWIM1->EVENTS_LASTRX) {
         NRF_TWIM1->EVENTS_LASTRX = 0;
         event |= EVENT_RECEIVE_DATA_FINISHED;
+        if (i2c_stop) {
+            NRF_TIMER1->TASKS_STOP = 1; // I don't actually know if this does anything
+            NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
+        }
     }
 
     if (TWIMInterruptInitialized) {
