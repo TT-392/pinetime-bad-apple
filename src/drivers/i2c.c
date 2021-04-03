@@ -77,12 +77,15 @@ void subscribeAndInitI2CInterrupt(void function()) {
 static bool i2c_stop = 0;
 void i2c_sleep() {
     i2c_stop = 1;
+    NRF_TIMER1->TASKS_STOP = 1;
 }
 
 void i2c_wake() {
+    i2c_stop = 0;
     NRF_TWIM1->EVENTS_LASTRX = 0;
     NRF_TWIM1->EVENTS_TXSTARTED = 0;
 
+    NRF_TIMER1->TASKS_CLEAR = 1;
     NRF_TIMER1->TASKS_START = 1;
     NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Enabled << TWI_ENABLE_ENABLE_Pos;
 }
@@ -104,7 +107,13 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
         NRF_TWIM1->EVENTS_LASTRX = 0;
         event |= EVENT_RECEIVE_DATA_FINISHED;
         if (i2c_stop) {
-            NRF_TIMER1->TASKS_STOP = 1; // I don't actually know if this does anything
+            NRF_TIMER1->TASKS_STOP = 1;
+        }
+    }
+
+    if (NRF_TWIM1->EVENTS_STOPPED) {
+        NRF_TWIM1->EVENTS_STOPPED = 0;
+        if (i2c_stop) {
             NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
         }
     }
