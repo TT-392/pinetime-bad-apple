@@ -21,6 +21,7 @@
 #include "keyboard.c"
 #include "uart.h"
 #include "sleep.h"
+#include "core.h"
 
 static bool toggle = 1;
 

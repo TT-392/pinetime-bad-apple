@@ -36,6 +36,7 @@ SRC_FILES += \
   $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
   $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/drivers/i2c.c \
+  $(PROJ_DIR)/core.c \
   $(PROJ_DIR)/main.c \
 
 
