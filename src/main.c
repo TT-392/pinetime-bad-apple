@@ -44,11 +44,6 @@ int main(void) {
     int x = 0;
 
 
-
-
-
-
-
     int i = 320;
     int counter = 0;
 
@@ -96,9 +91,8 @@ int main(void) {
         int error;
         wdt_feed();
 
-
-
         int selectedItem = drawScrollMenu();
+
         if (selectedItem != -1) {
             display_scroll(320, 0, 0, 0);
 

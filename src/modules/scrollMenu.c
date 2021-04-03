@@ -9,13 +9,9 @@
 #include "icons.c"
 #include "semihost.h"
 #include "uart.h"
+#include "scrollMenu.h"
 
 #define SCREENTAB -1
-
-int randnumber (int seed) {
-    int randomNumber = seed * 1103515245 + 12345;
-    return (unsigned int)(randomNumber/65536) % 32768;
-}
 
 // ┌──────────┐ 
 // │          │ lines that don't move (used for status bar)
@@ -39,21 +35,6 @@ int clearance = 20;
 volatile static int tabY = 0;
 volatile static int tabX = 0;
 
-struct menuBMP { // (x2 - x1 + 1) % 8 should always be 0
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-    uint16_t color;
-    char* BMP;
-};
-
-struct menu_item {
-    char* name;
-    int elements;
-    struct menuBMP element[5];
-};
-
 struct menu_item menu_items[13] = { // first element reserved for text
     {"clock",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x06fe, clockDigital}}},
     {"test2",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
@@ -70,17 +51,6 @@ struct menu_item menu_items[13] = { // first element reserved for text
     {"yay",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}}
 };
 
-struct menu_properties {
-    uint16_t top;
-    uint16_t bottom;
-    int length;
-    struct menu_item* items;
-    int item_size;
-    int icon_top;
-    int icon_height;
-    int icon_width; // in bytes
-};
-
 struct menu_properties menu = {
     .top = 20,
     .bottom = 238,
@@ -91,7 +61,6 @@ struct menu_properties menu = {
     .icon_height = 49,
     .icon_width = 7
 };
-
 
 static struct touchPoints touchPoint1;
 
@@ -301,8 +270,6 @@ int scrollMenu_init () {
     actualScroll = 0;
     scrollPosition(0,0,1);
 }
-
-
 
 int drawScrollMenu () {
     int TFA = menu.top; // top fixed area

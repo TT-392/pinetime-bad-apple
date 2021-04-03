@@ -115,6 +115,7 @@ void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void) {
         NRF_TWIM1->EVENTS_STOPPED = 0;
         if (i2c_stop) {
             NRF_TWIM1->ENABLE = TWIM_ENABLE_ENABLE_Disabled << TWI_ENABLE_ENABLE_Pos;
+            // I should check if this is actually happening at some point
         }
     }
 
