@@ -13,7 +13,8 @@ int core_start_process(struct process *Process) {
         }
     }
 
-    Process->start();
+    if (Process->startExists)
+        Process->start();
 
     runningProcessCount++;
 
@@ -39,7 +40,8 @@ int core_stop_process(struct process *Process) {
         return ERROR_NOT_RUNNING;
     }
 
-    Process->stop();
+    if (Process->stopExists)
+        Process->stop();
 
     runningProcessCount--;
 
@@ -59,6 +61,8 @@ int core_stop_process(struct process *Process) {
 
 void core_run() {
     for (int i = 0; i < runningProcessCount; i++) {
-        runningProcesses[i]->run();
+        if (runningProcesses[i]->runExists) {
+            runningProcesses[i]->run();
+        }
     }
 }

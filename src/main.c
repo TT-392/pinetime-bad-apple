@@ -18,14 +18,12 @@
 #include "watchface.h"
 #include "date.h"
 #include "touch.h"
-#include "keyboard.c"
 #include "uart.h"
 #include "sleep.h"
 #include "core.h"
+#include "main_menu.h"
 
 static bool toggle = 1;
-
-
 
 int main(void) {
     battery_init();
@@ -36,7 +34,6 @@ int main(void) {
     bool osRunning = 1;
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
-    drawSquare(0, 0, 239, 319, 0x0000);
     display_backlight(255);
 
 
@@ -48,12 +45,6 @@ int main(void) {
     int i = 320;
     int counter = 0;
 
-    //    int logColor;
-    //    for (int i = 0; i < 300; i++) {
-    //        drawMenuLine (i, -1, i+20);
-    //    }
-
-    //    drawSquare(0, 0, 239, 319, 0xffff);
 
     nrf_gpio_cfg_output(15);	
     nrf_gpio_pin_write(15,1);
@@ -62,22 +53,6 @@ int main(void) {
 
     struct touchPoints touchPoint = {0};
     bool backlight = 0;
-    //while (1) {
-    //    touch_refresh(&touchPoint);
-    //    if (touchPoint.error == 0) {
-    //        if (touchPoint.tab == 1) {
-    //            drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0x07FC);
-    //        } else if (touchPoint.tab == 2) {
-    //            drawSquare(touchPoint.touchX-2,touchPoint.touchY-2,touchPoint.touchX+2,touchPoint.touchY+2,0xff00);
-    //        } else {
-    //            drawSquare(touchPoint.touchX,touchPoint.touchY,touchPoint.touchX,touchPoint.touchY,0xffff);
-    //        }
-    //        drawNumber(140,50,touchPoint.errorCount,0xffff,0x0000,10,0);
-    //    }
-    //}
-
-    //if (touchPoint.error == 0) {
-    //}
 
 
 
@@ -85,43 +60,11 @@ int main(void) {
     //statusBar_refresh();
     touch_init();
 
+    core_start_process(&main_menu);
+    core_start_process(&statusbar);
+
     scrollMenu_init();
     while(osRunning) {
-
-        statusBar_refresh();
-        int error;
-        wdt_feed();
-
-        int selectedItem = drawScrollMenu();
-
-        if (selectedItem != -1) {
-            display_scroll(320, 0, 0, 0);
-
-            if (selectedItem == 2) {
-                drawSquare(0, 20, 239, 319, 0x0000);
-
-                bool running = 1;
-                while (running) {
-                    wdt_feed();
-                    if (sl_nextFrameReady) {
-                        running = !sl(65, 0xffff, 0x0000);
-                        statusBar_refresh();
-                    }
-                }
-                scrollMenu_init();
-
-            }
-            if (selectedItem == 0) {
-                digitalWatch();
-                drawSquare(0, 0, 239, 319, 0x0000);
-                scrollMenu_init();
-            }
-            if (selectedItem == 1) {
-                sleep();
-                drawSquare(0, 0, 239, 319, 0x0000);
-                scrollMenu_init();
-                display_backlight(255);
-            }
-        }
+        core_run();
     }
 }

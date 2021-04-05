@@ -30,6 +30,7 @@ SRC_FILES += \
   $(PROJ_DIR)/utils/geometry.c \
   $(PROJ_DIR)/modules/sleep.c \
   $(PROJ_DIR)/modules/scrollMenu.c \
+  $(PROJ_DIR)/modules/main_menu.c \
   $(PROJ_DIR)/modules/watchface.c \
   $(PROJ_DIR)/modules/statusbar.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
@@ -178,6 +179,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/modules\
   $(PROJ_DIR)/drivers/pinetime_display_driver\
   $(PROJ_DIR)/utils\
+  $(PROJ_DIR)/\
   $(PROJ_DIR)/drivers\
   $(PROJ_DIR)/resources\
   $(PROJ_DIR)/resources/icons\

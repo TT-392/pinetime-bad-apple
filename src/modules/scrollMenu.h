@@ -1,4 +1,11 @@
 #pragma once
+#include <stdint.h>
+#include "display.h"
+#include "wdt.h"
+#include "watchface.h"
+#include "statusbar.h"
+#include "steamLocomotive.h"
+#include "sleep.h"
 
 struct menuBMP { // (x2 - x1 + 1) % 8 should always be 0
     int x1;

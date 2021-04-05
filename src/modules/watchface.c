@@ -8,6 +8,17 @@
 #include "systick.h"
 #include "geometry.h"
 #include "wdt.h"
+#include "core.h"
+#include "watchface.h"
+#include "main_menu.h"
+
+struct process watchface = {
+    .runExists = 1,
+    .run = &digitalWatch_run,
+    .startExists = 1,
+    .start = &digitalWatch_init,
+    .stopExists = 0,
+};
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {
     if (!horizontal) {
@@ -306,104 +317,106 @@ int draw14SegmentNumber(int xSegment, int ySegment, uint16_t character, int colo
     }
 }
 
-void digitalWatch() {
+static uint64_t lastTime;
+void digitalWatch_init() {
     drawSquare(0, 0, 239, 239, 0x0000);
     clock_setup();
-    
-   // uint16_t colorOff = 0x1800;
-   // uint16_t colorOn = 0xf800;
-    uint16_t colorOff = 0x0841;
-    uint16_t colorOn = 0x07ff;
-
-    // draw the battery
-    int x = 190; int y = 20; int lineWidth = 2; int length = 30; int width = 15; int contactWidth = 5; int holeWidth = 5; int segments = 4; int gap = 1; int segmentGap = 1;
-
-    drawSquare(x + lineWidth, y, x + length - 1, y+lineWidth - 1, colorOn);  // top line
-    drawSquare(x + lineWidth, y + width - lineWidth, x + length - 1, y+width - 1, colorOn); // bottom line
-    drawSquare(x + lineWidth, y + lineWidth, x + lineWidth*2 - 1, y + width - lineWidth - 1, colorOn); // closing front
-    drawSquare(x, y + (width - contactWidth)/2, x + lineWidth - 1, y + (width + contactWidth)/2 - 1, colorOn); // contact
-    drawSquare(x + length - lineWidth, y + lineWidth, x + length - 1, y + (width - holeWidth)/2 - 1, colorOn); // back segment 1
-    drawSquare(x + length - lineWidth, y + (width + holeWidth)/2, x + length - 1, y + width - lineWidth - 1, colorOn); // back segment 2
-
-    float segmentsWidth = length - lineWidth*5 - gap*2;
-    float segmentWidth = (segmentsWidth + segmentGap) / segments;
-
-    int batterylevel = 2;
-    for (int i = 0; i < segments; i++) {
-        drawSquare(x + lineWidth*3 + gap + i*segmentWidth, y + lineWidth*2, x + lineWidth*3 + ((i+1)*segmentWidth - segmentGap) + gap - 1, y + width - lineWidth*2 - 1, i >= batterylevel? colorOn: colorOff); // contact
-    }
-
-    
-    int numbers[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f}; //array of 7 segment numbers
-
-    uint16_t letters[26] = {0x0077,0x2a0f,0x0039,0x220f,0x0079,0x0071,0x083d,0,0,0x001e,0,0x0038,0x0536,0x1136,0x003f,0x0073,0,0x1073,0x006d,0x2201,0x003e,0x4430,0,0,0x2500,0};
-
-    char* months[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
-
-    
-    uint64_t lastTime = cpuTime();
-
-    int i = 0;
-    while (1) {
-        if ((cpuTime() - lastTime) > 64000000) {
-            lastTime = cpuTime();
-
-            long long int time = clock_time();
-            int second, minute, hour, day, month, year;
-
-            epochtotime(time, &second, &minute, &hour, &day, &month, &year);
-
-            //char printvalue[11] = "0000000000\n";
-            //int division = 1;
-            //for (int k = 0; k < 10; k++) {
-            //    printvalue[9-k] += (time / (division)) % 10;
-            //    division *= 10;
-            //}
-
-            //semihost_print(printvalue, 11);
-
-            draw7SegmentNumber(32  - 15, 100, (hour / 10) % 10, colorOn, colorOff);
-            draw7SegmentNumber(32  - 15 + 50, 100, hour % 10, colorOn, colorOff);
-
-            draw7SegmentNumber(120 + 15, 100, (minute / 10) % 10, colorOn, colorOff);
-            draw7SegmentNumber(120 + 15 + 50, 100, minute % 10, colorOn, colorOff);
-
-            drawCircle(120, 100 + 14, 5, i % 2 ? colorOff : colorOn);
-            drawCircle(120, 100 - 14, 5, i % 2 ? colorOff : colorOn);
-
-            i++;
-
-            drawString(187, 140, "AM", colorOff, 0x0000);
-            drawString(187 + 8*2, 140, "PM", colorOff, 0x0000);
-
-            int j = 0;
-            draw14SegmentNumber(18 + j*30, 185, numbers[(day / 10) %10], colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, numbers[day % 10], colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, 0x40, colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][0] - 97], colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][1] - 97], colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][2] - 97], colorOn, colorOff);
-            j++;
-            draw14SegmentNumber(18 + j*30, 185, 0, colorOn, colorOff);
-
-            
-            wdt_feed();
-        }
-
-
-        struct touchPoints touchPoint;
-        touch_refresh(&touchPoint);
-        if (touchPoint.gesture == 0x0C) {
-            return;
-        }
-    }
-
-
-
-    while (1);
+    lastTime = cpuTime();
 }
+
+
+void digitalWatch_run() {
+    static int i = 0;
+    if ((cpuTime() - lastTime) > 64000000) {
+        lastTime = cpuTime();
+
+        // uint16_t colorOff = 0x1800;
+        // uint16_t colorOn = 0xf800;
+        uint16_t colorOff = 0x0841;
+        uint16_t colorOn = 0x07ff;
+
+        // draw the battery
+        int x = 190; int y = 20; int lineWidth = 2; int length = 30; int width = 15; int contactWidth = 5; int holeWidth = 5; int segments = 4; int gap = 1; int segmentGap = 1;
+
+        drawSquare(x + lineWidth, y, x + length - 1, y+lineWidth - 1, colorOn);  // top line
+        drawSquare(x + lineWidth, y + width - lineWidth, x + length - 1, y+width - 1, colorOn); // bottom line
+        drawSquare(x + lineWidth, y + lineWidth, x + lineWidth*2 - 1, y + width - lineWidth - 1, colorOn); // closing front
+        drawSquare(x, y + (width - contactWidth)/2, x + lineWidth - 1, y + (width + contactWidth)/2 - 1, colorOn); // contact
+        drawSquare(x + length - lineWidth, y + lineWidth, x + length - 1, y + (width - holeWidth)/2 - 1, colorOn); // back segment 1
+        drawSquare(x + length - lineWidth, y + (width + holeWidth)/2, x + length - 1, y + width - lineWidth - 1, colorOn); // back segment 2
+
+        float segmentsWidth = length - lineWidth*5 - gap*2;
+        float segmentWidth = (segmentsWidth + segmentGap) / segments;
+
+        int batterylevel = 2;
+        for (int i = 0; i < segments; i++) {
+            drawSquare(x + lineWidth*3 + gap + i*segmentWidth, y + lineWidth*2, x + lineWidth*3 + ((i+1)*segmentWidth - segmentGap) + gap - 1, y + width - lineWidth*2 - 1, i >= batterylevel? colorOn: colorOff); // contact
+        }
+
+
+        int numbers[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f}; //array of 7 segment numbers
+
+        uint16_t letters[26] = {0x0077,0x2a0f,0x0039,0x220f,0x0079,0x0071,0x083d,0,0,0x001e,0,0x0038,0x0536,0x1136,0x003f,0x0073,0,0x1073,0x006d,0x2201,0x003e,0x4430,0,0,0x2500,0};
+
+        char* months[12] = {"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
+
+
+
+
+        long long int time = clock_time();
+        int second, minute, hour, day, month, year;
+
+        epochtotime(time, &second, &minute, &hour, &day, &month, &year);
+
+        //char printvalue[11] = "0000000000\n";
+        //int division = 1;
+        //for (int k = 0; k < 10; k++) {
+        //    printvalue[9-k] += (time / (division)) % 10;
+        //    division *= 10;
+        //}
+
+        //semihost_print(printvalue, 11);
+
+        draw7SegmentNumber(32  - 15, 100, (hour / 10) % 10, colorOn, colorOff);
+        draw7SegmentNumber(32  - 15 + 50, 100, hour % 10, colorOn, colorOff);
+
+        draw7SegmentNumber(120 + 15, 100, (minute / 10) % 10, colorOn, colorOff);
+        draw7SegmentNumber(120 + 15 + 50, 100, minute % 10, colorOn, colorOff);
+
+        drawCircle(120, 100 + 14, 5, i % 2 ? colorOff : colorOn);
+        drawCircle(120, 100 - 14, 5, i % 2 ? colorOff : colorOn);
+
+        i++;
+
+        drawString(187, 140, "AM", colorOff, 0x0000);
+        drawString(187 + 8*2, 140, "PM", colorOff, 0x0000);
+
+        int j = 0;
+        draw14SegmentNumber(18 + j*30, 185, numbers[(day / 10) %10], colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, numbers[day % 10], colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, 0x40, colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][0] - 97], colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][1] - 97], colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, letters[months[month - 1][2] - 97], colorOn, colorOff);
+        j++;
+        draw14SegmentNumber(18 + j*30, 185, 0, colorOn, colorOff);
+
+
+        wdt_feed();
+    }
+
+
+    struct touchPoints touchPoint;
+    touch_refresh(&touchPoint);
+    if (touchPoint.gesture == 0x0C) {
+        core_stop_process(&watchface);
+        core_start_process(&main_menu);
+    }
+}
+
+
