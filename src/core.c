@@ -1,3 +1,4 @@
+#include "nrf.h"
 #include "core.h"
 #include <string.h>
 #include <stdlib.h>
@@ -5,6 +6,8 @@
 
 static struct process **runningProcesses;
 static int runningProcessCount = 0;
+volatile bool event_always = 1;
+
 
 int core_start_process(struct process *Process) {
     for (int i = 0; i < (runningProcessCount); i++) {
@@ -60,8 +63,22 @@ int core_stop_process(struct process *Process) {
 }
 
 void core_run() {
+    event_always = 1;
+    bool currentEvents[runningProcessCount];
+
+    __disable_irq();
     for (int i = 0; i < runningProcessCount; i++) {
-        if (runningProcesses[i]->runExists) {
+        currentEvents[i] = *runningProcesses[i]->event;
+    }
+
+    for (int i = 0; i < runningProcessCount; i++) {
+        *runningProcesses[i]->event = 0;
+    }
+    __enable_irq();
+
+
+    for (int i = 0; i < runningProcessCount; i++) {
+        if (runningProcesses[i]->runExists && currentEvents[i]) {
             runningProcesses[i]->run();
         }
     }

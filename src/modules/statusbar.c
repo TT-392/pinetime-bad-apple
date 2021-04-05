@@ -10,6 +10,7 @@ struct process statusbar = {
     .run = &statusbar_run,
     .startExists = 0,
     .stopExists = 0,
+    .event = &event_always,
 };
 
 void statusbar_run() {

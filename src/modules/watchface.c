@@ -18,6 +18,7 @@ struct process watchface = {
     .startExists = 1,
     .start = &digitalWatch_init,
     .stopExists = 0,
+    .event = &event_always,
 };
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {

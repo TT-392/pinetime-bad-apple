@@ -9,6 +9,7 @@ struct process main_menu = {
     .start = &menu_init,
     .stopExists = 1,
     .stop = &menu_stop,
+    .event = &event_always,
 };
 
 void menu_init() {    
