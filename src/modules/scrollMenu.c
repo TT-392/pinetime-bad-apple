@@ -6,7 +6,6 @@
 #include "nrf_delay.h"
 #include <stdlib.h>
 #include <math.h>
-#include "icons.c"
 #include "semihost.h"
 #include "uart.h"
 #include "scrollMenu.h"
@@ -34,33 +33,6 @@ int clearance = 20;
 
 volatile static int tabY = 0;
 volatile static int tabX = 0;
-
-struct menu_item menu_items[13] = { // first element reserved for text
-    {"clock",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x06fe, clockDigital}}},
-    {"test2",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"SL",         2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0xffff, trainIcon,  }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"uwu",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"wow",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, distorted,  }}},
-    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
-    {"this works", 2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, distorted,  }}},
-    {"yay",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}}
-};
-
-struct menu_properties menu = {
-    .top = 20,
-    .bottom = 238,
-    .length = 13,
-    .items = menu_items,
-    .item_size = 73,
-    .icon_top = 0,
-    .icon_height = 49,
-    .icon_width = 7
-};
 
 static struct touchPoints touchPoint1;
 
@@ -146,7 +118,7 @@ int scrollPosition(int lowerBound, int upperBound, bool reset) {
         return 0;
 }
 
-void drawSelected (int filled, int selectedItem, int scrollPos) {
+void drawSelected (int filled, int selectedItem, int scrollPos, struct scrollMenu menu) {
     int TFA = menu.top; // top fixed area
     int VSA = 220 + clearance;// vertical scrolling area
 
@@ -203,7 +175,7 @@ void drawSelected (int filled, int selectedItem, int scrollPos) {
 // lineNr = the scroll menu line Nr
 // overWritingLineNr = the line Nr of the line that is currently on this line of display memory (for partial updates)
 // screenY = the line of the display memory to write to
-void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
+void drawMenuLine (int lineNr, int overWritingLineNr, int screenY, struct scrollMenu menu) {
     struct menu_item menuItem = menu.items[lineNr / menu.item_size];
     struct menu_item overWritingMenuItem = menu.items[overWritingLineNr / menu.item_size];
 
@@ -248,30 +220,30 @@ void drawMenuLine (int lineNr, int overWritingLineNr, int screenY) {
 
 static int actualScroll = 0; // the amount of scrolling that is actually gonna be on the display by the next cycle
 
-int scrollMenu_init () {
+int scrollMenu_init (struct scrollMenu *menu) {
     // convert text to bmp
-    for (int i = 0; i < menu.length; i++) {
+    for (int i = 0; i < menu->length; i++) {
         int textLength = 0;
-        while (menu.items[i].name[textLength] != '\0') {
+        while (menu->items[i].name[textLength] != '\0') {
             textLength++;
         }
-        menu.items[i].element[0].BMP = malloc(16*textLength);
+        menu->items[i].element[0].BMP = malloc(16*textLength);
 
-        stringBMP(menu.items[i].element[0].BMP, menu.items[i].name, textLength);
+        stringBMP(menu->items[i].element[0].BMP, menu->items[i].name, textLength);
 
-        menu.items[i].element[0].y2 = menu.items[i].element[0].y1 + 16 - 1;
-        menu.items[i].element[0].x2 = menu.items[i].element[0].x1 + 8 * textLength - 1;
+        menu->items[i].element[0].y2 = menu->items[i].element[0].y1 + 16 - 1;
+        menu->items[i].element[0].x2 = menu->items[i].element[0].x1 + 8 * textLength - 1;
 
     }
 
     for (int i = 0; i < 220; i++)
-        drawMenuLine(i, -1, i+20);
+        drawMenuLine(i, -1, i+20, *menu);
 
     actualScroll = 0;
     scrollPosition(0,0,1);
 }
 
-int drawScrollMenu () {
+int drawScrollMenu (struct scrollMenu menu) {
     int TFA = menu.top; // top fixed area
     int VSA = 220 + clearance;// vertical scrolling area
 
@@ -296,7 +268,7 @@ int drawScrollMenu () {
             int lineNr = actualScroll + VSA-1-clearance;
             int overWritingLineNr = lineNr - VSA;
 
-            drawMenuLine (lineNr, overWritingLineNr, writeU);
+            drawMenuLine (lineNr, overWritingLineNr, writeU, menu);
         }
 
         if (direction == -1) { // scrolling down
@@ -304,7 +276,7 @@ int drawScrollMenu () {
             int lineNr = actualScroll;
             int overWritingLineNr = lineNr + VSA;
 
-            drawMenuLine (lineNr, overWritingLineNr, writeD);
+            drawMenuLine (lineNr, overWritingLineNr, writeD, menu);
         }
 
         display_scroll(TFA, VSA, 320 - (TFA + VSA), SSA);
@@ -312,7 +284,7 @@ int drawScrollMenu () {
         //int memY = 20 + ((tabY - 20 + actualScroll) % VSA);
 
         int selectedItem = ((tabY - 20) + actualScroll) / menu.item_size;
-        drawSelected(100, selectedItem, actualScroll);
+        drawSelected(100, selectedItem, actualScroll, menu);
         return selectedItem;
     }
     return -1;

@@ -22,7 +22,7 @@ struct menu_item {
     struct menuBMP element[5];
 };
 
-struct menu_properties {
+struct scrollMenu {
     uint16_t top;
     uint16_t bottom;
     int length;
@@ -33,6 +33,6 @@ struct menu_properties {
     int icon_width; // in bytes
 };
 
-int scrollMenu_init ();
+int scrollMenu_init (struct scrollMenu *menu);
 
-int drawScrollMenu ();
+int drawScrollMenu (struct scrollMenu menu);

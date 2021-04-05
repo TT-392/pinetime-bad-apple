@@ -60,7 +60,6 @@ int main(void) {
     core_start_process(&main_menu);
     core_start_process(&statusbar);
 
-    scrollMenu_init();
     while(osRunning) {
         core_run();
         wdt_feed();
