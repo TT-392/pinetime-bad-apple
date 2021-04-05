@@ -54,9 +54,6 @@ int main(void) {
     struct touchPoints touchPoint = {0};
     bool backlight = 0;
 
-
-
-
     //statusBar_refresh();
     touch_init();
 
@@ -66,5 +63,6 @@ int main(void) {
     scrollMenu_init();
     while(osRunning) {
         core_run();
+        wdt_feed();
     }
 }

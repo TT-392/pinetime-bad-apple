@@ -4,5 +4,6 @@
 
 void battery_init ();
 
+int battery_percent();
 
-void battery_percent (int x, int y, uint16_t color_text, uint16_t color_bg);
+void battery_draw_percent (int x, int y, uint16_t color_text, uint16_t color_bg);

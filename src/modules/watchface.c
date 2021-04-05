@@ -11,6 +11,7 @@
 #include "core.h"
 #include "watchface.h"
 #include "main_menu.h"
+#include "battery.h"
 
 struct process watchface = {
     .runExists = 1,
@@ -18,7 +19,7 @@ struct process watchface = {
     .startExists = 1,
     .start = &digitalWatch_init,
     .stopExists = 0,
-    .event = &event_always,
+    .event = &secondPassed
 };
 
 int drawSegment(int x, int y, int bevelSwitch1, int bevelSwitch2, int width, int height, bool horizontal, uint16_t color)  {
@@ -328,8 +329,6 @@ void digitalWatch_init() {
 
 void digitalWatch_run() {
     static int i = 0;
-    if ((cpuTime() - lastTime) > 64000000) {
-        lastTime = cpuTime();
 
         // uint16_t colorOff = 0x1800;
         // uint16_t colorOn = 0xf800;
@@ -349,9 +348,9 @@ void digitalWatch_run() {
         float segmentsWidth = length - lineWidth*5 - gap*2;
         float segmentWidth = (segmentsWidth + segmentGap) / segments;
 
-        int batterylevel = 2;
+        int batterylevel = battery_percent();
         for (int i = 0; i < segments; i++) {
-            drawSquare(x + lineWidth*3 + gap + i*segmentWidth, y + lineWidth*2, x + lineWidth*3 + ((i+1)*segmentWidth - segmentGap) + gap - 1, y + width - lineWidth*2 - 1, i >= batterylevel? colorOn: colorOff); // contact
+            drawSquare(x + lineWidth*3 + gap + i*segmentWidth, y + lineWidth*2, x + lineWidth*3 + ((i+1)*segmentWidth - segmentGap) + gap - 1, y + width - lineWidth*2 - 1, i >= 4 - batterylevel ? colorOn : colorOff); // contact
         }
 
 
@@ -409,7 +408,6 @@ void digitalWatch_run() {
 
 
         wdt_feed();
-    }
 
 
     struct touchPoints touchPoint;

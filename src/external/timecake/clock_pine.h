@@ -1,6 +1,7 @@
 #pragma once
+#include <stdbool.h>
 
-extern volatile int secondPassed;
+extern volatile bool secondPassed;
 
 int clock_setup(void);
 

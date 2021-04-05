@@ -13,7 +13,7 @@ void battery_init () {
     battery_read(&flags, &voltage, &filteredPercentage);
 }
 
-void battery_percent (int x, int y, uint16_t color_text, uint16_t color_bg) {
+void battery_draw_percent (int x, int y, uint16_t color_text, uint16_t color_bg) {
     int flags;
     float voltage, percent;
 
@@ -34,4 +34,15 @@ void battery_percent (int x, int y, uint16_t color_text, uint16_t color_bg) {
     }
 
     drawString (x, y, batteryString, color_text, color_bg);
+}
+
+int battery_percent() {
+    int flags;
+    float voltage, percent;
+
+    battery_read(&flags, &voltage, &percent);
+
+    filteredPercentage += 0.001 * (percent - filteredPercentage);
+
+    return (int)filteredPercentage;
 }
