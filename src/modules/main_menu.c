@@ -25,17 +25,9 @@ void menu_run() {
         display_scroll(320, 0, 0, 0);
 
         if (selectedItem == 2) {
-            drawSquare(0, 20, 239, 319, 0x0000);
-
-            bool running = 1;
-            while (running) {
-                wdt_feed();
-                if (sl_nextFrameReady) {
-                    running = !sl(65, 0xffff, 0x0000);
-                }
-            }
-            scrollMenu_init();
-
+            core_stop_process(&main_menu);
+            core_start_process(&sl);
+            return;
         }
         if (selectedItem == 0) {
             core_stop_process(&main_menu);

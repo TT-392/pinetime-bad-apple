@@ -1,9 +1,22 @@
 #include "nrf_clock.h"
 #include "nrf_timer.h"
-#include "steamLocomotive.h"
-volatile bool sl_nextFrameReady = 1;
-
+#include "core.h"
+#include "main_menu.h"
 #include "display_print.h"
+#include "steamLocomotive.h"
+#include "display.h"
+
+struct process sl = {
+    .runExists = 1,
+    .run = &sl_run,
+    .startExists = 1,
+    .start = &sl_init,
+    .stopExists = 1,
+    .stop = &sl_init,
+    .event = &sl_nextFrameReady
+};
+
+volatile bool sl_nextFrameReady = 1;
 
 void TIMER0_IRQHandler(void) {
     sl_nextFrameReady = 1;
@@ -24,35 +37,46 @@ void sl_static(int x, int y, uint16_t color_text, uint16_t color_bg) {
     };
 
 
-    
     for (int i = 0; i < 6; i++) {
         drawString (x, y + i*16, train[i], color_text, color_bg);
     }
 }
 
+void sl_init() {
+    drawSquare(0, 20, 239, 319, 0x0000);
+
+    // Irq setup
+    NVIC_SetPriority(TIMER0_IRQn, 15); // Lowes priority
+    NVIC_ClearPendingIRQ(TIMER0_IRQn);
+    NVIC_EnableIRQ(TIMER0_IRQn);
+
+    nrf_timer_mode_set(NRF_TIMER0,NRF_TIMER_MODE_TIMER);
+    nrf_timer_bit_width_set(NRF_TIMER0, NRF_TIMER_BIT_WIDTH_32);
+    nrf_timer_frequency_set(NRF_TIMER0, NRF_TIMER_FREQ_1MHz);
+    nrf_timer_cc_write(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0, 1000000/8);
+
+    nrf_timer_int_enable(NRF_TIMER0,NRF_TIMER_INT_COMPARE0_MASK );
+    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_START);
+}
+
+void sl_stop() {
+    // Irq setup
+    NVIC_DisableIRQ(TIMER0_IRQn);
+
+    nrf_timer_int_disable(NRF_TIMER0, NRF_TIMER_INT_COMPARE0_MASK);
+    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_STOP);
+}
 
 
-int sl(int y, uint16_t color_text, uint16_t color_bg) {
+void sl_run() {
+    int y = 65;
+    uint16_t color_text = 0xffff;
+    uint16_t color_bg = 0x0000;
     sl_nextFrameReady = 0;
     static int time = 0;
 
     static bool firstframe = 1;
     if (firstframe) {
-        // Irq setup
-        NVIC_SetPriority(TIMER0_IRQn, 15); // Lowes priority
-        NVIC_ClearPendingIRQ(TIMER0_IRQn);
-        NVIC_EnableIRQ(TIMER0_IRQn);
-
-
-        nrf_timer_mode_set(NRF_TIMER0,NRF_TIMER_MODE_TIMER);
-        nrf_timer_bit_width_set(NRF_TIMER0, NRF_TIMER_BIT_WIDTH_32);
-        nrf_timer_frequency_set(NRF_TIMER0, NRF_TIMER_FREQ_1MHz);
-        nrf_timer_cc_write(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0, 1000000/8);
-
-        nrf_timer_int_enable(NRF_TIMER0,NRF_TIMER_INT_COMPARE0_MASK );
-        nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_START);
-
-        firstframe = 0;
     }
 
 
@@ -123,8 +147,7 @@ int sl(int y, uint16_t color_text, uint16_t color_bg) {
     time++;
     if (time >= (30+22)) {
         time = 0;
-        return 1;
-    } else {
-        return 0;
-    }
+        core_stop_process(&sl);
+        core_start_process(&main_menu);
+    } 
 }
