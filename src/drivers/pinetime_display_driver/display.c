@@ -417,7 +417,6 @@ void display_scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_va
     ppi_set();
 
     uint8_t byteArray[12];
-    /* set square to draw in */
     byteArray[0] = CMD_VSCRDEF;
 
     byteArray[1] = TFA >> 8;
@@ -453,17 +452,39 @@ void display_scroll(uint16_t TFA, uint16_t VSA, uint16_t BFA, uint16_t scroll_va
 }
 
 void partialMode(uint16_t PSL, uint16_t PEL) {
-    display_send (0, CMD_MADCTL);
-    display_send (1, 0x0/*0x10*/);
+    // the following CC setup will cause byte 0, 5 and 10 
+    // of any SPIM0 dma transfer to be treated as CMD bytes
+    NRF_TIMER3->CC[0] = 5+(8*0*2); // low
+    NRF_TIMER3->CC[1] = 5+(8*1*2); // high
+    NRF_TIMER3->CC[2] = 5+(8*2*2); // low
+    NRF_TIMER3->CC[3] = 5+(8*3*2); // high
+    NRF_TIMER3->CC[4] = 5+(8*7*2); // low
+    NRF_TIMER3->CC[5] = 5+(8*50*2); // high (should never trigger)
+    ppi_set();
 
-    display_send (0, CMD_PTLAR);
+    uint8_t byteArray[12];
+    byteArray[0] = CMD_MADCTL;
+    byteArray[1] = 0;
 
-    display_send (1,PSL >> 8);
-    display_send (1,PSL & 0xff);
+    byteArray[2] = CMD_PTLAR;
 
-    display_send (1,PEL >> 8);
-    display_send (1,PEL & 0xff);
+    byteArray[3] = PSL >> 8;
+    byteArray[4] = PSL & 0xff;
 
-    display_send (0, CMD_PTLON);
+    byteArray[5] = PEL >> 8;
+    byteArray[6] = PEL & 0xff;
 
+    byteArray[7] = CMD_PTLON;
+
+    /**/
+
+    // the following CC setup will cause byte 0, 5 and 10 
+    // of any SPIM0 dma transfer to be treated as CMD bytes
+    NRF_TIMER3->CC[0] = 5+(8*0*2);
+    NRF_TIMER3->CC[1] = 5+(8*1*2);
+    NRF_TIMER3->CC[2] = 5+(8*5*2);
+    NRF_TIMER3->CC[3] = 5+(8*6*2);
+    NRF_TIMER3->CC[4] = 5+(8*10*2);
+    NRF_TIMER3->CC[5] = 5+(8*11*2);
+    ppi_clr();
 }

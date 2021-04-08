@@ -1,14 +1,13 @@
 #include "scrollMenu.h"
 #include "core.h"
 #include "icons.c"
-#include "main_menu.h"
 #include "settings.h"
 
 static struct menu_item menu_items[13] = { // first element reserved for text
-    {"clock",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x06fe, clockDigital}}},
-    {"sleep",      2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
+    {"setting 1",  2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x06fe, clockDigital}}},
+    {"setting 2",  2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
     {"SL",         2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0xffff, trainIcon,  }}},
-    {"settings",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x528A, settings_circled,}}},
+    {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
     {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
     {"uwu",        2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
     {"test",       2, {{70, 28, 0, 0, 0xffff},{0, 12, 55, 60, 0x00f0, termux,     }}},
@@ -32,30 +31,35 @@ static struct scrollMenu menu = {
 };
 
 
-struct process main_menu = {
+struct process settings = {
     .runExists = 1,
-    .run = &menu_run,
+    .run = &settings_run,
     .startExists = 1,
-    .start = &menu_init,
+    .start = &settings_init,
     .stopExists = 1,
-    .stop = &menu_stop,
+    .stop = &settings_stop,
     .event = &event_always,
 };
 
-void menu_init() {    
+void settings_init() {    
     drawSquare(0, 0, 239, 319, 0x0000);
     scrollMenu_init(&menu);
     core_start_process(&statusbar);
 }
 
-void menu_run() {
+void settings_run() {
     int selectedItem = drawScrollMenu(menu);
 
     if (selectedItem != -1) {
         display_scroll(320, 0, 0, 0);
 
+        if (selectedItem == 2) {
+            core_stop_process(&settings);
+            core_start_process(&sl);
+            return;
+        }
         if (selectedItem == 0) {
-            core_stop_process(&main_menu);
+            core_stop_process(&settings);
             core_start_process(&watchface);
             return;
         }
@@ -65,19 +69,9 @@ void menu_run() {
             scrollMenu_init(&menu);
             display_backlight(255);
         }
-        if (selectedItem == 2) {
-            core_stop_process(&main_menu);
-            core_start_process(&sl);
-            return;
-        }
-        if (selectedItem == 3) {
-            core_stop_process(&main_menu);
-            core_start_process(&settings);
-            return;
-        }
     }
 }
 
-void menu_stop() {
+void settings_stop() {
     core_stop_process(&statusbar);
 }

@@ -31,6 +31,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/sleep.c \
   $(PROJ_DIR)/modules/scrollMenu.c \
   $(PROJ_DIR)/modules/main_menu.c \
+  $(PROJ_DIR)/modules/settings.c \
   $(PROJ_DIR)/modules/watchface.c \
   $(PROJ_DIR)/modules/statusbar.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \

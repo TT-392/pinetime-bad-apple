@@ -61,6 +61,7 @@ int main(void) {
     core_start_process(&statusbar);
 
     while(osRunning) {
+        partialMode(0,90);
         core_run();
         wdt_feed();
     }
