@@ -1,4 +1,6 @@
 #pragma once
+#include "nrf.h"
+
 
 extern volatile uint64_t cpuTimeOverflow;
 

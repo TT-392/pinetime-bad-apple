@@ -38,6 +38,7 @@ SRC_FILES += \
   $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
   $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/drivers/i2c.c \
+  $(PROJ_DIR)/bad_apple/bad_apple.c \
   $(PROJ_DIR)/core.c \
   $(PROJ_DIR)/main.c \
 
@@ -182,6 +183,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/utils\
   $(PROJ_DIR)/\
   $(PROJ_DIR)/drivers\
+  $(PROJ_DIR)/bad_apple\
   $(PROJ_DIR)/resources\
   $(PROJ_DIR)/resources/icons\
 
