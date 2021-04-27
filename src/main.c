@@ -27,11 +27,11 @@
 static bool toggle = 1;
 
 int main(void) {
- //   battery_init();
+    battery_init();
     display_init();
-    //date_init();
-    //sysTick_init();
-    //date_init();
+    date_init();
+    sysTick_init();
+    date_init();
     bool osRunning = 1;
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
@@ -41,10 +41,10 @@ int main(void) {
     drawSquare(0,0,50,50,0xffff);
 
     render_video();
-    while (1);
+ //   while (1);
 
 
-    uart_init();
+    //uart_init();
 
     int x = 0;
 
@@ -62,14 +62,14 @@ int main(void) {
     bool backlight = 0;
 
     //statusBar_refresh();
-//    touch_init();
+    touch_init();
 
-//    core_start_process(&main_menu);
-//    core_start_process(&statusbar);
-//
-//    while(osRunning) {
-//        //partialMode(0,90);
-//        core_run();
-//        wdt_feed();
-//    }
+    core_start_process(&main_menu);
+    core_start_process(&statusbar);
+
+    while(osRunning) {
+        //partialMode(0,90);
+        core_run();
+        wdt_feed();
+    }
 }
