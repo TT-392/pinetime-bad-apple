@@ -20,6 +20,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
   $(PROJ_DIR)/utils/wdt.c \
+  $(PROJ_DIR)/utils/break.c \
   $(PROJ_DIR)/utils/semihost.c \
   $(PROJ_DIR)/utils/systick.c \
   $(PROJ_DIR)/utils/display_print.c \

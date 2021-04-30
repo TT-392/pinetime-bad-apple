@@ -57,7 +57,7 @@ struct dataBlock readBlock() {
 
 void render_video() {
     sysTick_init();
-    while (1) {
+    //while (1) {
         index = 0;
         uint64_t lastTime = cpuTime();
         while (1) {
@@ -81,5 +81,6 @@ void render_video() {
             free(data.bitmap);
 
         }
-    }
+        while (1);
+    //}
 }
