@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include "systick.h"
 
+volatile uint64_t lag = 0;
+
 struct dataBlock {
     int x1;
     int y1;
@@ -23,7 +25,6 @@ struct dataBlock readBlock() {
     struct dataBlock retval = {};
 
     retval.eof = 0;
-
 
     retval.newFrame = video[index];
     index++;
@@ -55,6 +56,11 @@ struct dataBlock readBlock() {
     return retval;
 }
 
+// 16 bit color:
+// lag = 17761904
+// 12 bit color:
+// lag = 16610091
+
 void render_video() {
     sysTick_init();
     //while (1) {
@@ -63,12 +69,16 @@ void render_video() {
         while (1) {
             struct dataBlock data = readBlock();
 
-
             if (data.eof)
                 break;
 
             if (data.newFrame) {
                 uint64_t newTime = cpuTime();
+
+                if (newTime > lastTime + 2133333)
+                    lag += newTime - (lastTime + 2133333);
+
+            
                 while (newTime < lastTime + 2133333)
                     newTime = cpuTime();
 
