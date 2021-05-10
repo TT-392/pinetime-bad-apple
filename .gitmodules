@@ -1,6 +1,3 @@
 [submodule "Adafruit_nRF52_nrfutil"]
 	path = Adafruit_nRF52_nrfutil
 	url = https://github.com/adafruit/Adafruit_nRF52_nrfutil.git
-[submodule "src/pinetime_display_driver"]
-	path = src/pinetime_display_driver
-	url = https://github.com/TT-392/pinetime_display_driver.git
