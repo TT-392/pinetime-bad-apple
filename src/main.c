@@ -3,8 +3,8 @@
 #include "nrf_delay.h"
 
 #include "wdt.h"
-#include "display.h"
-#include "display_defines.h"
+//#include "display.h"
+//#include "display_defines.h"
 #include "battery.h"
 #include "frame.c"
 #include "steamLocomotive.h"
@@ -26,7 +26,111 @@
 
 static bool toggle = 1;
 
+#define FLASH_SCK 2 //30
+#define FLASH_MOSI 3//11
+#define FLASH_MISO 4
+#define FLASH_CS 5
+
+// send one byte over spi
+void spi_send(uint8_t byte) {
+    NRF_SPIM0->TXD.MAXCNT = 1;
+    NRF_SPIM0->TXD.PTR = (uint32_t)&byte;
+
+    NRF_SPIM0->EVENTS_ENDTX = 0;
+    NRF_SPIM0->EVENTS_ENDRX = 0;
+    NRF_SPIM0->EVENTS_END = 0;
+
+    NRF_SPIM0->TASKS_START = 1;
+    while(NRF_SPIM0->EVENTS_ENDTX == 0) __NOP();
+    while(NRF_SPIM0->EVENTS_END == 0) __NOP();
+    NRF_SPIM0->TASKS_STOP = 1;
+    while (NRF_SPIM0->EVENTS_STOPPED == 0) __NOP();
+}
+
 int main(void) {
+    ////////////////
+    // setup pins //
+    ////////////////
+    nrf_gpio_cfg_output(FLASH_MOSI);
+    nrf_gpio_cfg_output(FLASH_SCK);
+    nrf_gpio_cfg_input(FLASH_MISO, NRF_GPIO_PIN_NOPULL);
+
+    nrf_gpio_cfg_output(FLASH_CS);
+    nrf_gpio_pin_write(FLASH_CS,1);
+
+    //nrf_gpio_pin_write(FLASH_CS,1);
+
+
+    ///////////////
+    // spi setup //
+    ///////////////
+    NRF_SPIM0->PSEL.SCK  = FLASH_SCK;
+    NRF_SPIM0->PSEL.MOSI = FLASH_MOSI;
+    NRF_SPIM0->PSEL.MISO = FLASH_MISO;
+
+    NRF_SPIM0->CONFIG = (SPIM_CONFIG_ORDER_MsbFirst  << SPIM_CONFIG_ORDER_Pos)|
+                        (SPIM_CONFIG_CPOL_ActiveLow  << SPIM_CONFIG_CPOL_Pos) |
+                        (SPIM_CONFIG_CPHA_Trailing   << SPIM_CONFIG_CPHA_Pos);
+
+    NRF_SPIM0->FREQUENCY = SPIM_FREQUENCY_FREQUENCY_M4 << SPIM_FREQUENCY_FREQUENCY_Pos;
+    NRF_SPIM0->ENABLE = SPIM_ENABLE_ENABLE_Enabled << SPIM_ENABLE_ENABLE_Pos;
+
+
+    nrf_gpio_pin_write(FLASH_CS,0);
+    //while (1) {
+        volatile uint8_t data[3] = {0, 1, 2};
+        uint8_t byte = 0x9f;
+        NRF_SPIM0->TXD.MAXCNT = 1;
+        NRF_SPIM0->TXD.PTR = (uint32_t)&byte;
+
+        NRF_SPIM0->EVENTS_ENDTX = 0;
+        NRF_SPIM0->EVENTS_ENDRX = 0;
+        NRF_SPIM0->EVENTS_END = 0;
+        NRF_SPIM0->EVENTS_STOPPED = 0;
+
+        NRF_SPIM0->TASKS_START = 1;
+        while(NRF_SPIM0->EVENTS_END == 0) __NOP();
+
+        NRF_SPIM0->RXD.MAXCNT = 3;
+        NRF_SPIM0->RXD.PTR = (uint32_t)&data;
+
+        NRF_SPIM0->EVENTS_END = 0;
+        NRF_SPIM0->TASKS_START = 1;
+        while(NRF_SPIM0->EVENTS_END == 0) __NOP();
+     //   nrf_gpio_pin_write(FLASH_CS,1);
+    //}
+
+   // NRF_SPIM0->TASKS_STOP = 1;
+   // while (NRF_SPIM0->EVENTS_STOPPED == 0) __NOP();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    while(1);
+
+
+
+
     battery_init();
     display_init();
     date_init();
