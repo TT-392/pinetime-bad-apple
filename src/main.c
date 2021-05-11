@@ -23,61 +23,37 @@
 #include "core.h"
 #include "main_menu.h"
 #include "bad_apple.h"
+#include "spi.h"
+#include "display_print.h"
+#include "display_defines.h"
 
 static bool toggle = 1;
 
-#define FLASH_SCK 2 //30
-#define FLASH_MOSI 3//11
-#define FLASH_MISO 4
 #define FLASH_CS 5
 
 // send one byte over spi
-void spi_send(uint8_t byte) {
-    NRF_SPIM0->TXD.MAXCNT = 1;
-    NRF_SPIM0->TXD.PTR = (uint32_t)&byte;
-
-    NRF_SPIM0->EVENTS_ENDTX = 0;
-    NRF_SPIM0->EVENTS_ENDRX = 0;
-    NRF_SPIM0->EVENTS_END = 0;
-
-    NRF_SPIM0->TASKS_START = 1;
-    while(NRF_SPIM0->EVENTS_ENDTX == 0) __NOP();
-    while(NRF_SPIM0->EVENTS_END == 0) __NOP();
-    NRF_SPIM0->TASKS_STOP = 1;
-    while (NRF_SPIM0->EVENTS_STOPPED == 0) __NOP();
-}
 
 int main(void) {
-    ////////////////
-    // setup pins //
-    ////////////////
-    nrf_gpio_cfg_output(FLASH_MOSI);
-    nrf_gpio_cfg_output(FLASH_SCK);
-    nrf_gpio_cfg_input(FLASH_MISO, NRF_GPIO_PIN_NOPULL);
-
+    nrf_gpio_cfg_output(LCD_SELECT);
+    nrf_gpio_pin_write(LCD_SELECT,1);
     nrf_gpio_cfg_output(FLASH_CS);
     nrf_gpio_pin_write(FLASH_CS,1);
+    display_init();
 
-    //nrf_gpio_pin_write(FLASH_CS,1);
+    nrf_delay_ms(1000);
+    
 
+    display_backlight(255);
 
-    ///////////////
-    // spi setup //
-    ///////////////
-    NRF_SPIM0->PSEL.SCK  = FLASH_SCK;
-    NRF_SPIM0->PSEL.MOSI = FLASH_MOSI;
-    NRF_SPIM0->PSEL.MISO = FLASH_MISO;
+    drawSquare(0,0,239,239,0x0000);
+    drawSquare(50, 50, 100, 100, 0xffff);
+    
 
-    NRF_SPIM0->CONFIG = (SPIM_CONFIG_ORDER_MsbFirst  << SPIM_CONFIG_ORDER_Pos)|
-                        (SPIM_CONFIG_CPOL_ActiveLow  << SPIM_CONFIG_CPOL_Pos) |
-                        (SPIM_CONFIG_CPHA_Trailing   << SPIM_CONFIG_CPHA_Pos);
-
-    NRF_SPIM0->FREQUENCY = SPIM_FREQUENCY_FREQUENCY_M4 << SPIM_FREQUENCY_FREQUENCY_Pos;
-    NRF_SPIM0->ENABLE = SPIM_ENABLE_ENABLE_Enabled << SPIM_ENABLE_ENABLE_Pos;
+    display_pause();
 
 
-    nrf_gpio_pin_write(FLASH_CS,0);
-    //while (1) {
+    
+        nrf_gpio_pin_write(FLASH_CS,0);
         volatile uint8_t data[3] = {0, 1, 2};
         uint8_t byte = 0x9f;
         NRF_SPIM0->TXD.MAXCNT = 1;
@@ -97,23 +73,30 @@ int main(void) {
         NRF_SPIM0->EVENTS_END = 0;
         NRF_SPIM0->TASKS_START = 1;
         while(NRF_SPIM0->EVENTS_END == 0) __NOP();
-     //   nrf_gpio_pin_write(FLASH_CS,1);
-    //}
+        NRF_SPIM0->RXD.MAXCNT = 0;
 
-   // NRF_SPIM0->TASKS_STOP = 1;
-   // while (NRF_SPIM0->EVENTS_STOPPED == 0) __NOP();
-
-
-
-
-
+        NRF_SPIM0->EVENTS_ENDTX = 0;
+        NRF_SPIM0->EVENTS_ENDRX = 0;
+        NRF_SPIM0->EVENTS_END = 0;
+        NRF_SPIM0->EVENTS_STOPPED = 0;
+        nrf_gpio_pin_write(FLASH_CS,1);
+        
 
 
 
 
 
+    display_resume();
 
+    nrf_delay_ms(1000);
 
+    display_backlight(255);
+    drawSquare(0,0,239,239,0x0000);
+    drawSquare(0,0,50,50,0xffff);
+    drawNumber(50, 50, data[0], 0xffff, 0x0000, 0, 0);
+    drawNumber(80, 50, data[1], 0xffff, 0x0000, 0, 0);
+    drawNumber(110, 50, data[2], 0xffff, 0x0000, 0, 0);
+    drawString(50, 70, __TIME__, 0xffff, 0x0000);
 
 
 
@@ -143,6 +126,7 @@ int main(void) {
 
     drawSquare(0,0,239,239,0x0000);
     drawSquare(0,0,50,50,0xffff);
+
 
     render_video();
  //   while (1);
