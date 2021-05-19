@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <nrf_gpio.h>
 #include "flash.h"
-#include <nrf_delay.h>
-#define FLASH_CS 5
 
 static void spiWrite(uint8_t *data, int length) {
     NRF_SPIM0->TXD.MAXCNT = length;
@@ -31,7 +29,7 @@ static void spiRead(volatile uint8_t *data, int length) {
     NRF_SPIM0->RXD.MAXCNT = 0;
 }
 
-uint8_t checkStatus() {
+static uint8_t checkStatus() {
     nrf_gpio_pin_write(FLASH_CS,0);
     uint8_t data;
     uint8_t cmd = FLASH_RDSR;
@@ -42,6 +40,8 @@ uint8_t checkStatus() {
 }
 
 void spiflash_sector_erase(int addr) {
+    spiWriteByte(FLASH_WREN);
+
     nrf_gpio_pin_write(FLASH_CS,0);
     uint8_t cmd[] = {FLASH_SE, addr >> 16, addr >> 8, addr};
     spiWrite(cmd, 4);
@@ -50,6 +50,8 @@ void spiflash_sector_erase(int addr) {
 }
 
 void spiflash_write_data(int addr, uint8_t* data, int length) {
+    spiWriteByte(FLASH_WREN);
+
     nrf_gpio_pin_write(FLASH_CS,0);
     uint8_t cmd[length + 4];
     cmd[0] = FLASH_PP; cmd[1] = addr >> 16; cmd[2] = addr >> 8; cmd[3] = addr;
@@ -67,39 +69,10 @@ void spiflash_read_data(int addr, uint8_t* data, int length) {
     nrf_gpio_pin_write(FLASH_CS,1);
 }
 
-void spiflash() {
+void spiflash_init() {
     nrf_gpio_cfg_output(FLASH_CS);
     nrf_gpio_pin_write(FLASH_CS,1);
 
-    // init
     spiWriteByte(FLASH_RDI);
-    //nrf_delay_ms(1000);
-    /////////
-    
-    // write enable
-    spiWriteByte(FLASH_WREN);
-    /////////
-
-    // sector erase
-    int addr = 0;
-    spiflash_sector_erase(addr);
-    /////////
-
-
-    // write enable
-    spiWriteByte(FLASH_WREN);
-    /////////
-
-    // write data
-    uint8_t writedata[4] = {0x00,0x00,0xaa,0x55};
-    spiflash_write_data(addr, writedata, 4);
-    /////////
-    
-    // read data
-    uint8_t data[10];
-    spiflash_read_data(0, data, 10);
-    /////////
-    
-
-    while(1);
 }
+

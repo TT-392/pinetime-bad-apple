@@ -9,4 +9,13 @@
 #define FLASH_RDSR 0x05
 #define FLASH_RDI 0xab
 
-void spiflash();
+#define FLASH_CS 5
+
+
+void spiflash_sector_erase(int addr);
+
+void spiflash_write_data(int addr, uint8_t* data, int length);
+
+void spiflash_read_data(int addr, uint8_t* data, int length);
+
+void spiflash_init();

@@ -49,10 +49,25 @@ int main(void) {
     display_pause();
 
 
-    spiflash();
+    spiflash_init();
     
-        
+    // sector erase
+    int addr = 0;
+    spiflash_sector_erase(addr);
+    /////////
 
+    // write data
+    uint8_t writedata[4] = {0xff,0x00,0xaa,0x00};
+    spiflash_write_data(addr, writedata, 4);
+    /////////
+    
+    // read data
+    uint8_t data[10];
+    spiflash_read_data(0, data, 10);
+    /////////
+    
+
+    while(1);
 
 
 
