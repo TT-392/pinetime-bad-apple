@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 #define FLASH_WREN 0x06
 #define FLASH_WRDI 0x04
@@ -14,8 +15,8 @@
 
 void spiflash_sector_erase(int addr);
 
-void spiflash_write_data(int addr, uint8_t* data, int length);
+void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length);
 
-void spiflash_read_data(int addr, uint8_t* data, int length);
+void spiflash_read_data(uint32_t addr, uint8_t* data, uint32_t length);
 
 void spiflash_init();

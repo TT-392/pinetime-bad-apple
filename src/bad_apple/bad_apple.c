@@ -14,9 +14,7 @@ struct dataBlock {
     int y2;
 
     bool newFrame;
-
     bool eof;
-
     uint8_t* bitmap;
 };
 
