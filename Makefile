@@ -42,6 +42,7 @@ SRC_FILES += \
   $(PROJ_DIR)/drivers/flash.c \
   $(PROJ_DIR)/drivers/i2c.c \
   $(PROJ_DIR)/bad_apple/bad_apple_flash.c \
+  $(PROJ_DIR)/bad_apple/bad_apple.c \
   $(PROJ_DIR)/core.c \
   $(PROJ_DIR)/main.c \
 
@@ -194,8 +195,8 @@ INC_FOLDERS += \
 LIB_FILES += \
 
 # Optimization flags
-#OPT = -O3 -g3 #-Og
-OPT = -O0 -g3
+OPT = -O3 -g3 #-Og
+#OPT = -O0 -g3
 # Uncomment the line below to enable link time optimization
 OPT += -flto
 

@@ -79,7 +79,7 @@ void spiflash_read_data(uint32_t addr, uint8_t* data, uint32_t length) {
         nrf_gpio_pin_write(FLASH_CS,0);
 
         uint8_t cmd[] = {FLASH_READ, addr >> 16, addr >> 8, addr};
-        int readLen = length > 0x80 ? 0x80 : length;
+        int readLen = length > 0xff ? 0xff : length;
 
         spiWrite(cmd, sizeof(cmd));
         spiRead(data, readLen);
