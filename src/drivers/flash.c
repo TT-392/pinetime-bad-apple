@@ -64,7 +64,6 @@ void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length) {
         memcpy(&cmd[4], data, writeLen);
         spiWrite(cmd, sizeof(cmd));
 
-
         length -= writeLen;
         addr += writeLen;
         data += writeLen;
@@ -76,11 +75,21 @@ void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length) {
 }
 
 void spiflash_read_data(uint32_t addr, uint8_t* data, uint32_t length) {
-    nrf_gpio_pin_write(FLASH_CS,0);
-    uint8_t cmd[] = {FLASH_READ, addr >> 16, addr >> 8, addr};
-    spiWrite(cmd, sizeof(cmd));
-    spiRead(data, length);
-    nrf_gpio_pin_write(FLASH_CS,1);
+    while (length > 0) {
+        nrf_gpio_pin_write(FLASH_CS,0);
+
+        uint8_t cmd[] = {FLASH_READ, addr >> 16, addr >> 8, addr};
+        int readLen = length > 0x80 ? 0x80 : length;
+
+        spiWrite(cmd, sizeof(cmd));
+        spiRead(data, readLen);
+
+        length -= readLen;
+        addr += readLen;
+        data += readLen;
+
+        nrf_gpio_pin_write(FLASH_CS,1);
+    }
 }
 
 void spiflash_init() {
