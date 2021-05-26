@@ -1,5 +1,6 @@
 #include "flash.h"
-#include "video.h"
+#include "video_0.h"
+#include "display.h"
 
 void write_video() {
     int sectorSize = 0x1000;
@@ -8,9 +9,9 @@ void write_video() {
     const uint8_t* tempVid = video;
 
     int sector = 0;
-    uint32_t addr = 0;
+    uint64_t addr = 0 * videoLength;
     while (length > 0) {
-        spiflash_sector_erase(sectorSize * sector);
+        spiflash_sector_erase(addr);
 
         int writeLen = length > sectorSize ? sectorSize : length;
 
@@ -57,7 +58,7 @@ void ringbuf_fetch(uint64_t time) {
 
 uint8_t ringbuf_getc() {
     static uint32_t counter = 0;
-    if (counter > videoLength) {
+    if (counter > videoLength*8) {
         while (1);
     }
     counter++;
@@ -70,7 +71,16 @@ uint8_t ringbuf_getc() {
 
         return retval;
     } else {
-        // help, abort
-        __asm__("BKPT");
+        display_pause();
+        ringbuf_fetch (160000);
+        display_resume();
+
+        uint8_t retval = ringbuf[ringbuf_read_ptr];
+
+        ringbuf_read_ptr++;
+        if (ringbuf_read_ptr == ringbuf_size)
+            ringbuf_read_ptr = 0;
+
+        return retval;
     }
 }

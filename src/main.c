@@ -10,7 +10,7 @@
 #include "semihost.h"
 #include "statusbar.h"
 #include "scrollMenu.h"
-#include "systick.h"
+//#include "systick.h"
 #include "date.h"
 #include "uart.h"
 #include "sleep.h"
@@ -27,7 +27,7 @@ int main(void) {
     battery_init();
     display_init();
     date_init();
-    sysTick_init();
+    //sysTick_init();
     date_init();
     bool osRunning = 1;
 
@@ -39,8 +39,7 @@ int main(void) {
     display_pause();
     spiflash_init();
 
-
-//    write_video();
+    //write_video();
     display_backlight(255);
 
     //volatile uint8_t data[1000] = {};

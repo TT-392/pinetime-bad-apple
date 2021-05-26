@@ -13,7 +13,7 @@
 #define FLASH_CS 5
 
 
-void spiflash_sector_erase(int addr);
+void spiflash_sector_erase(uint32_t addr);
 
 void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length);
 

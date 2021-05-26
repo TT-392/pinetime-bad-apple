@@ -40,7 +40,7 @@ static uint8_t checkStatus() {
     return (data);
 }
 
-void spiflash_sector_erase(int addr) {
+void spiflash_sector_erase(uint32_t addr) {
     spiWriteByte(FLASH_WREN);
 
     nrf_gpio_pin_write(FLASH_CS,0);

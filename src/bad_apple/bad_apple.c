@@ -23,15 +23,21 @@ struct dataBlock readBlock() {
 
     retval.eof = 0;
 
-    retval.newFrame = ringbuf_getc();
+    uint8_t c = ringbuf_getc();
+    retval.newFrame = c & 1;
+    bool shortCoords = (c >> 2) & 1;
 
     retval.x1 = ringbuf_getc();
-
     retval.y1 = ringbuf_getc();
 
-    retval.x2 = ringbuf_getc();
-
-    retval.y2 = ringbuf_getc();
+    if (shortCoords) {
+        c = ringbuf_getc();
+        retval.x2 = c & 0xf;
+        retval.y2 = (c >> 4) & 0xf;
+    } else {
+        retval.x2 = ringbuf_getc();
+        retval.y2 = ringbuf_getc();
+    }
 
     int blockSize = ((retval.x2+1) * (retval.y2+1) + 7) / 8; // bytes rounded up
 
@@ -85,7 +91,6 @@ void render_video() {
                 lastTime = newTime;
                 //__asm__("BKPT");
             }
-
 
             drawMono(data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, data.bitmap, 0xffff, 0x0000);
 
