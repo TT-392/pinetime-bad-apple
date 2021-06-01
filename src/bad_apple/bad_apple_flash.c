@@ -72,7 +72,7 @@ uint8_t ringbuf_getc() {
         return retval;
     } else {
         display_pause();
-        ringbuf_fetch (160000);
+        ringbuf_fetch (1600000);
         display_resume();
 
         uint8_t retval = ringbuf[ringbuf_read_ptr];

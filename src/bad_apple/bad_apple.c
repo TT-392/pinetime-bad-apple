@@ -1,9 +1,10 @@
 #include "display.h"
+#include "nrf.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include "bad_apple_flash.h"
-#include "systick.h"
+//#include "systick.h"
 
 volatile uint64_t lag = 0;
 
@@ -14,6 +15,7 @@ struct dataBlock {
     int y2;
 
     bool newFrame;
+    bool flipped;
     bool eof;
     uint8_t* bitmap;
 };
@@ -26,6 +28,7 @@ struct dataBlock readBlock() {
     uint8_t c = ringbuf_getc();
     retval.newFrame = c & 1;
     bool shortCoords = (c >> 2) & 1;
+    retval.flipped = (c >> 1) & 1;
 
     retval.x1 = ringbuf_getc();
     retval.y1 = ringbuf_getc();
@@ -59,10 +62,13 @@ struct dataBlock readBlock() {
 // lag = 16610091
 
 void render_video() {
-    sysTick_init();
+    SysTick->LOAD = 2133333;
+    SysTick->VAL = 0;
+    SysTick->CTRL = 1 << 0;
+    //sysTick_init();
     //while (1) {
         //index = 0;
-        uint64_t lastTime = cpuTime();
+        //uint64_t lastTime = cpuTime();
         display_pause();
         ringbuf_fetch(64000000);
         display_resume();
@@ -73,23 +79,35 @@ void render_video() {
                 break;
 
             if (data.newFrame) {
-                uint64_t newTime = cpuTime();
+                //uint64_t newTime = cpuTime();
 
-                if (newTime > lastTime + 2133333)
-                    lag += newTime - (lastTime + 2133333);
+//                if (newTime > lastTime + 2133333)
+//                    lag += newTime - (lastTime + 2133333);
 
             
-                if (newTime < lastTime + 2133333) {
+               // if (newTime < lastTime + 2133333) {
+               //     display_pause();
+               //     ringbuf_fetch ((lastTime + 2133333) - newTime);
+               //     display_resume();
+               // }
+
+                if (!(SysTick->CTRL & (1 << 16))) {
                     display_pause();
-                    ringbuf_fetch ((lastTime + 2133333) - newTime);
+                    ringbuf_fetch (SysTick->VAL);
                     display_resume();
                 }
-
+                while (!(SysTick->CTRL & (1 << 16)));
                 //while (newTime < lastTime + 2133333)
                 //    newTime = cpuTime();
 
-                lastTime = newTime;
+               // lastTime = newTime;
                 //__asm__("BKPT");
+            }
+
+            static bool flipped = 1;
+            if (data.flipped) {
+                flipped = !flipped;
+                flip (flipped);
             }
 
             drawMono(data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, data.bitmap, 0xffff, 0x0000);
