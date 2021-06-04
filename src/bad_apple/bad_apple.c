@@ -17,6 +17,9 @@ struct dataBlock {
     bool newFrame;
     bool flipped;
     bool eof;
+    bool staticFrames;
+    int staticAmount;
+
     uint8_t* bitmap;
 };
 
@@ -29,6 +32,12 @@ struct dataBlock readBlock() {
     retval.newFrame = c & 1;
     bool shortCoords = (c >> 2) & 1;
     retval.flipped = (c >> 1) & 1;
+    retval.staticFrames = (c >> 3) & 1;
+
+    if (retval.staticFrames) {
+        retval.staticAmount = ringbuf_getc();
+        return retval;
+    }
 
     retval.x1 = ringbuf_getc();
     retval.y1 = ringbuf_getc();
@@ -78,41 +87,52 @@ void render_video() {
             if (data.eof)
                 break;
 
-            if (data.newFrame) {
-                //uint64_t newTime = cpuTime();
-
-//                if (newTime > lastTime + 2133333)
-//                    lag += newTime - (lastTime + 2133333);
-
-            
-               // if (newTime < lastTime + 2133333) {
-               //     display_pause();
-               //     ringbuf_fetch ((lastTime + 2133333) - newTime);
-               //     display_resume();
-               // }
-
-                if (!(SysTick->CTRL & (1 << 16))) {
-                    display_pause();
-                    ringbuf_fetch (SysTick->VAL);
-                    display_resume();
+            if (data.staticFrames) {
+                for (int i = 0; i < data.staticAmount; i++) {
+                    if (!(SysTick->CTRL & (1 << 16))) {
+                        display_pause();
+                        ringbuf_fetch (SysTick->VAL);
+                        display_resume();
+                    }
+                    while (!(SysTick->CTRL & (1 << 16)));
                 }
-                while (!(SysTick->CTRL & (1 << 16)));
-                //while (newTime < lastTime + 2133333)
-                //    newTime = cpuTime();
+            } else {
+                if (data.newFrame) {
+                    //uint64_t newTime = cpuTime();
 
-               // lastTime = newTime;
-                //__asm__("BKPT");
+                    //                if (newTime > lastTime + 2133333)
+                    //                    lag += newTime - (lastTime + 2133333);
+
+
+                    // if (newTime < lastTime + 2133333) {
+                    //     display_pause();
+                    //     ringbuf_fetch ((lastTime + 2133333) - newTime);
+                    //     display_resume();
+                    // }
+
+                    if (!(SysTick->CTRL & (1 << 16))) {
+                        display_pause();
+                        ringbuf_fetch (SysTick->VAL);
+                        display_resume();
+                    }
+                    while (!(SysTick->CTRL & (1 << 16)));
+                    //while (newTime < lastTime + 2133333)
+                    //    newTime = cpuTime();
+
+                    // lastTime = newTime;
+                    //__asm__("BKPT");
+                }
+
+                static bool flipped = 1;
+                if (data.flipped) {
+                    flipped = !flipped;
+                    flip (flipped);
+                }
+
+                drawMono(data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, data.bitmap, 0xffff, 0x0000);
+
+                free(data.bitmap);
             }
-
-            static bool flipped = 1;
-            if (data.flipped) {
-                flipped = !flipped;
-                flip (flipped);
-            }
-
-            drawMono(data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, data.bitmap, 0xffff, 0x0000);
-
-            free(data.bitmap);
 
         }
         while (1);

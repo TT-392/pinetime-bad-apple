@@ -3,13 +3,14 @@
 #include "display.h"
 
 void write_video() {
+    uint64_t addr = 0 * videoLength;
+
     int sectorSize = 0x1000;
 
     uint32_t length = videoLength;
     const uint8_t* tempVid = video;
 
     int sector = 0;
-    uint64_t addr = 0 * videoLength;
     while (length > 0) {
         spiflash_sector_erase(addr);
 
