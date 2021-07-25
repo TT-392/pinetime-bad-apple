@@ -98,29 +98,12 @@ void render_video() {
                 }
             } else {
                 if (data.newFrame) {
-                    //uint64_t newTime = cpuTime();
-
-                    //                if (newTime > lastTime + 2133333)
-                    //                    lag += newTime - (lastTime + 2133333);
-
-
-                    // if (newTime < lastTime + 2133333) {
-                    //     display_pause();
-                    //     ringbuf_fetch ((lastTime + 2133333) - newTime);
-                    //     display_resume();
-                    // }
-
                     if (!(SysTick->CTRL & (1 << 16))) {
                         display_pause();
                         ringbuf_fetch (SysTick->VAL);
                         display_resume();
                     }
                     while (!(SysTick->CTRL & (1 << 16)));
-                    //while (newTime < lastTime + 2133333)
-                    //    newTime = cpuTime();
-
-                    // lastTime = newTime;
-                    //__asm__("BKPT");
                 }
 
                 static bool flipped = 1;
