@@ -36,7 +36,6 @@ int main(void) {
     drawSquare(0,0,239,239,0x0000);
     drawSquare(0,0,50,50,0xffff);
 
-    display_pause();
     spiflash_init();
 
     write_video();
