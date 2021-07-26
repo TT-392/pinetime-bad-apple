@@ -1,9 +1,9 @@
 #include "flash.h"
-#include "resources/video_3.h"
+#include "resources/video_7.h"
 #include "display.h"
 
 void write_video() {
-    uint64_t addr = 0 * videoLength;
+    uint64_t addr = 7 * videoLength;
 
     int sectorSize = 0x1000;
 

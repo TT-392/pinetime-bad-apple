@@ -27,15 +27,15 @@ struct dataBlock {
 uint8_t bad_apple_getc(ringbuffer* buffer) {
     uint8_t byte;
     int retval = ringbuff_getc(&byte, buffer);
-    if (retval == 1)
+    if (retval == 1) {
         bad_apple_fetch_and_decompress(18400);
+        ringbuff_getc(&byte, buffer);
+    }
     return byte;
 }
 
 struct dataBlock readBlock(ringbuffer* buffer) {
     struct dataBlock retval = {};
-    static int blockCount = 0;
-    blockCount++;
 
     retval.eof = 0;
 

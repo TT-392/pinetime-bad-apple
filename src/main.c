@@ -38,7 +38,7 @@ int main(void) {
 
     spiflash_init();
 
-    write_video();
+//    write_video();
     display_backlight(255);
 
     //volatile uint8_t data[1000] = {};

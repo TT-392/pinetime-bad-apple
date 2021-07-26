@@ -5,6 +5,8 @@
 #include "flash.h"
 #include "break.h"
 
+//TODO: set Block Protect bits to 0
+
 static void spiWrite(uint8_t *data, int length) {
     NRF_SPIM0->TXD.MAXCNT = length;
     NRF_SPIM0->TXD.PTR = (uint32_t)data;
