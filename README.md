@@ -1,5 +1,5 @@
 # Pinetime bad apple
-This repo contains the code to run bad apple on the pinetime. It is still a work in progress, I wouldn't recommend trying to run it yet. I am gonna be adding some documentation and maybe some binaries in the next week or so.
+This repo contains the code to run bad apple on the pinetime. It is still a work in progress, I wouldn't recommend trying to run it yet. I am planning to add some documentation and maybe some binaries in the next week or so.
 
 ## Compiling  
 (this part needs some work)  
