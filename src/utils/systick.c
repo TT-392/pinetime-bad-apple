@@ -3,9 +3,9 @@
 
 volatile uint64_t cpuTimeOverflow = 0;
 
-void SysTick_Handler(void) {
-    cpuTimeOverflow += 16000000;
-}
+//void SysTick_Handler(void) {
+//    cpuTimeOverflow += 16000000;
+//}
 
 void sysTick_init() {
     SysTick->LOAD = 16000000;

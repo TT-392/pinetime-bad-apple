@@ -49,6 +49,11 @@ enum lz4_retval lz4_decompress (uint8_t input, ringbuffer *buff) {
             }
             blockSize |= input << (i*8);
             if (i == 3) {
+                if (blockSize == 0) {
+                    ringbuff_putc_eof(buff);
+                    return LZ4_EOF;
+                }
+
                 compressed = !(blockSize & 0x80000000);
                 blockSize &= ~0x80000000;
 

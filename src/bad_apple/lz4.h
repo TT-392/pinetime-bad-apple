@@ -4,6 +4,7 @@
 
 enum lz4_retval {
     LZ4_BUFFERFULL,
+    LZ4_EOF,
     LZ4_MOREDATA
 };
 

@@ -5,9 +5,7 @@
 #include <stdbool.h>
 #include "bad_apple_data.h"
 #include "ringbuff.h"
-//#include "systick.h"
-
-volatile uint64_t lag = 0;
+#include "rtc.c"
 
 struct dataBlock {
     int x1;
@@ -25,11 +23,16 @@ struct dataBlock {
 };
 
 uint8_t bad_apple_getc(ringbuffer* buffer) {
+    static bool next_byte_eof = 0;
+    if (next_byte_eof)
+        __asm__("BKPT");
     uint8_t byte;
     int retval = ringbuff_getc(&byte, buffer);
     if (retval == 1) {
         bad_apple_fetch_and_decompress(18400);
         ringbuff_getc(&byte, buffer);
+    } if (retval == -1) {
+        next_byte_eof = 1;
     }
     return byte;
 }
@@ -76,19 +79,19 @@ struct dataBlock readBlock(ringbuffer* buffer) {
     return retval;
 }
 
-// 16 bit color:
-// lag = 17761904
-// 12 bit color:
-// lag = 16610091
+
+void wait_for_next_frame() {
+    static int renderedFrames = 0;
+
+    // counter increments at 32768 Hz, beware, will overflow after about 4 minutes.
+    while (((uint64_t)NRF_RTC0->COUNTER * 15) / 16384 < renderedFrames)
+        bad_apple_fetch_and_decompress(18400);
+    renderedFrames++;
+}
 
 void render_video() {
-    SysTick->LOAD = 2133333;
-    SysTick->VAL = 0;
-    SysTick->CTRL = 1 << 0;
-    //sysTick_init();
-    //while (1) {
-    //index = 0;
-    //uint64_t lastTime = cpuTime();
+    rtc_setup();
+
     ringbuffer *buff50k = bad_apple_init();
     drawSquare(0,0,200,200,0x1111);
 
@@ -100,17 +103,11 @@ void render_video() {
 
         if (data.staticFrames) {
             for (int i = 0; i < data.staticAmount; i++) {
-                if (!(SysTick->CTRL & (1 << 16))) {
-                    bad_apple_fetch_and_decompress(SysTick->VAL);
-                }
-                while (!(SysTick->CTRL & (1 << 16)));
+                wait_for_next_frame();
             }
         } else {
             if (data.newFrame) {
-                if (!(SysTick->CTRL & (1 << 16))) {
-                    bad_apple_fetch_and_decompress(SysTick->VAL);
-                }
-                while (!(SysTick->CTRL & (1 << 16)));
+                wait_for_next_frame();
             }
 
             static bool flipped = 1;

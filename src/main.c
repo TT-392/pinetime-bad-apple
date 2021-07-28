@@ -24,11 +24,11 @@
 static bool toggle = 1;
 
 int main(void) {
-    battery_init();
+//    battery_init();
     display_init();
-    date_init();
+//    date_init();
     //sysTick_init();
-    date_init();
+//    date_init();
     bool osRunning = 1;
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);

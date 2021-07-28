@@ -6,6 +6,7 @@ typedef struct {
     int size;
     int read_ptr;
     int filled_space;
+    int eof;
 } ringbuffer;
 
 ringbuffer *ringbuff_create(int size);
@@ -20,3 +21,6 @@ uint8_t ringbuff_getc_wrptr(int relative_address, ringbuffer *ringbuff);
 
 // returns free space before writing
 int ringbuff_putc(uint8_t byte, ringbuffer *ringbuff);
+
+void ringbuff_putc_eof(ringbuffer *ringbuff);
+

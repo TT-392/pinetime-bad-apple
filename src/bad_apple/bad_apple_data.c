@@ -24,7 +24,7 @@ uint8_t spiflash_getc() {
     return spiflashbuffer[spiflashbuffer_rptr++];
 }
 
-void bad_apple_fetch_and_decompress(uint64_t time) {
+int bad_apple_fetch_and_decompress(uint64_t time) {
     static const uint64_t speed = 900000; // 8 Mbps = 1 MBps * 90% for margin
     static const int timePerByte = (64000000 + speed - 1) / speed; // rounded up
     uint16_t byteCount = time / timePerByte;
@@ -39,15 +39,19 @@ void bad_apple_fetch_and_decompress(uint64_t time) {
         first = 0;
     }
 
+    bool dataAdded = 0;
     while (byteCount > 0) {
         lzstatus = lz4_decompress(input, buff50k);
         if (lzstatus == LZ4_MOREDATA) {
             input = spiflash_getc();
             byteCount--;
-        } else {
-            return; // full buffer
-        }
+            dataAdded = 1;
+        } else if (lzstatus == LZ4_EOF)
+            return 0;
+        else
+            return 1; // full buffer
     }
+    return 0;
 }
 
 ringbuffer *bad_apple_init() {

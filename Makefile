@@ -22,13 +22,13 @@ SRC_FILES += \
   $(PROJ_DIR)/utils/wdt.c \
   $(PROJ_DIR)/utils/break.c \
   $(PROJ_DIR)/utils/semihost.c \
-  $(PROJ_DIR)/utils/systick.c \
   $(PROJ_DIR)/utils/display_print.c \
   $(PROJ_DIR)/utils/calctime.c \
   $(PROJ_DIR)/utils/uart.c \
   $(PROJ_DIR)/utils/battery.c \
   $(PROJ_DIR)/utils/date.c \
   $(PROJ_DIR)/utils/geometry.c \
+  $(PROJ_DIR)/utils/systick.c \
   $(PROJ_DIR)/utils/adler32.c \
   $(PROJ_DIR)/modules/sleep.c \
   $(PROJ_DIR)/modules/scrollMenu.c \
@@ -38,9 +38,9 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/statusbar.c \
   $(PROJ_DIR)/modules/steamLocomotive.c \
   $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
-  $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/drivers/flash.c \
   $(PROJ_DIR)/drivers/i2c.c \
+  $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/bad_apple/bad_apple_flash.c \
   $(PROJ_DIR)/bad_apple/bad_apple_data.c \
   $(PROJ_DIR)/bad_apple/bad_apple.c \
