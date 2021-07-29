@@ -73,9 +73,6 @@ struct dataBlock readBlock(ringbuffer* buffer) {
         retval.bitmap[i] = bad_apple_getc(buffer);
     }
     
-    //if (index > videoLength)
-    //    retval.eof = 1; // TODO potentially reads past end of array
-
     return retval;
 }
 

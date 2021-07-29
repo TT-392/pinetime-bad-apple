@@ -1,3 +1,6 @@
+OUTFILENAME := bad_apple
+CFLAGS += $(EXTRAFLAGS)
+
 LDFLAGS += -T$(LINKER_SCRIPT_OTA)
 
-include Makefile
+include nordic/Makefile
