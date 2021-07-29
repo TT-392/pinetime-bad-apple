@@ -5,6 +5,9 @@
 if [ "$1" = "core" ];
 then
     make OUTFILENAME=bad_apple
+
+    mkdir -p _build/raw
+    cp _build/bad_apple.hex _build/raw/
 elif [ "$1" = "spiflash" ];
 then
     for f in src/bad_apple/resources/video*; do
@@ -12,6 +15,9 @@ then
         fileNr=${fileNr%\.h}
         echo $fileNr
         make OUTFILENAME=bad_apple_flash_$fileNr EXTRAFLAGS=-DSPIFLASH=$fileNr
+
+        mkdir -p _build/raw
+        cp _build/bad_apple_flash_$fileNr.hex _build/raw/
     done
 elif [ "$1" = "core_ota" ];
 then
@@ -33,7 +39,14 @@ then
         mkdir -p _build/ota
         cd Adafruit_nRF52_nrfutil
         #so, like, why does this work??
-        python3 -m nordicsemi dfu genpkg --dev-type 0x0052 --application ../_build/bad_apple_flash_ota_$fileNr.hex ../_build/ota/bad_apple_flash_ota$fileNr.zip
+        python3 -m nordicsemi dfu genpkg --dev-type 0x0052 --application ../_build/bad_apple_flash_ota_$fileNr.hex ../_build/ota/bad_apple_flash_ota_$fileNr.zip
         cd -
     done
+else
+    echo "Compilable targets:
+
+core
+spiflash
+core_ota
+spiflash_ota"
 fi
