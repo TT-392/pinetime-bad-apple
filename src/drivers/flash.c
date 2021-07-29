@@ -32,7 +32,7 @@ static void spiRead(volatile uint8_t *data, int length) {
     NRF_SPIM0->RXD.MAXCNT = 0;
 }
 
-static uint8_t checkStatus() {
+uint8_t checkStatus() {
     nrf_gpio_pin_write(FLASH_CS,0);
     uint8_t data;
     uint8_t cmd = FLASH_RDSR;

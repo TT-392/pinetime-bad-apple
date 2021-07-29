@@ -14,7 +14,7 @@ fi
 
 if [ "$1" = "makeflash" ];
 then
-    make -f Makefile_raw
+    ./compile.sh core
     $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f flash.cfg -l /tmp/openocd.log
 fi
 

@@ -12,6 +12,7 @@
 
 #define FLASH_CS 5
 
+uint8_t checkStatus();
 
 void spiflash_sector_erase(uint32_t addr);
 

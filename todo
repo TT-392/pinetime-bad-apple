@@ -1,0 +1,2 @@
+add something to spiflash init to clear potential block protects
+properly include rtc.h

@@ -6,6 +6,7 @@
 #include "bad_apple_data.h"
 #include "ringbuff.h"
 #include "rtc.c"
+#include "wdt.h"
 
 struct dataBlock {
     int x1;
@@ -93,6 +94,7 @@ void render_video() {
     drawSquare(0,0,200,200,0x1111);
 
     while (1) {
+        wdt_feed();
         struct dataBlock data = readBlock(buff50k);
 
         if (data.eof)

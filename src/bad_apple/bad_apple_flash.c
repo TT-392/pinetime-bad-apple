@@ -27,14 +27,33 @@
 #if SPIFLASH == 8
 #include "resources/video_8.h"
 #endif
+#if SPIFLASH == 9
+#include "resources/video_9.h"
+#endif
+#if SPIFLASH == 10
+#include "resources/video_10.h"
+#endif
+#if SPIFLASH == 11
+#include "resources/video_11.h"
+#endif
+#if SPIFLASH == 12
+#include "resources/video_12.h"
+#endif
+#if SPIFLASH == 13
+#include "resources/video_13.h"
+#endif
 #endif
 #include "display.h"
+#include "wdt.h"
+#include <stdio.h>
+#include "display_print.h"
+#include "nrf_delay.h"
 
 void write_video() {
 #ifdef SPIFLASH
 #pragma message "adding spiflash data"
 
-    uint64_t addr = SPIFLASH * 491520;
+    uint64_t addr = SPIFLASH * 303104;
 
     int sectorSize = 0x1000;
 
@@ -42,8 +61,10 @@ void write_video() {
     const uint8_t* tempVid = video;
 
     int sector = 0;
-    display_pause();
     while (length > 0) {
+        wdt_feed();
+        display_pause();
+
         spiflash_sector_erase(addr);
 
         int writeLen = length > sectorSize ? sectorSize : length;
@@ -54,7 +75,18 @@ void write_video() {
         tempVid += writeLen;
         length -= writeLen;
         sector++;
+
+        display_resume();
+
+        char buffer[30];
+        sprintf(buffer, "Bytes left: %i           ", length);
+        drawString(0, 0, buffer, 0x0000, 0xffff);
     }
-    display_resume();
+
+    char buffer[30];
+    sprintf(buffer, "done flashing %i        ", SPIFLASH);
+    drawString(0, 0, buffer, 0x0000, 0xffff);
+
+    nrf_delay_ms(1000);
 #endif
 }

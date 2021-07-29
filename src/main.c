@@ -20,6 +20,7 @@
 #include "bad_apple_flash.h"
 #include "flash.h"
 #include "adler32.h"
+#include "display_print.h"
 
 static bool toggle = 1;
 
@@ -34,30 +35,12 @@ int main(void) {
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
     drawSquare(0,0,239,239,0x0000);
-    drawSquare(0,0,50,50,0xffff);
+    //drawSquare(0,0,50,50,0xffff);
 
     spiflash_init();
 
-    write_video();
     display_backlight(255);
-
-    //volatile uint8_t data[1000] = {};
-    //volatile uint32_t checksum = 1;
-
-    //volatile uint32_t checksums[400];
-    //
-    //for (int i = 0; i < 400; i++) {
-    //    spiflash_read_data(i*1000, (uint8_t*)data, 1000);
-    //    checksum = adler32((uint8_t*)data, 1000, checksum);
-    //    checksums[i] = checksum;
-    //}
-
-#ifdef TEST
-#error uwu
-#endif
-
-    //__asm__("BKPT");
-    //while (1);
+    write_video();
 
     render_video();
     while (1);
