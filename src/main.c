@@ -1,7 +1,6 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
-
 #include "wdt.h"
 #include "display.h"
 #include "display_defines.h"
@@ -19,9 +18,10 @@ int main(void) {
 
     nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
 
-    drawSquare(0,0,239,239,0xffff);
-
     display_backlight(255);
+    drawSquare(0,0,239,239,0xffff);
+    drawSquare(0,0,40,40,0x0);
+
     write_video();
 
 

@@ -26,10 +26,11 @@ struct dataBlock {
     uint8_t* bitmap;
 };
 
-uint8_t bad_apple_getc(ringbuffer* buffer) {
+int bad_apple_getc(ringbuffer* buffer) {
     static bool next_byte_eof = 0;
     if (next_byte_eof)
-        __asm__("BKPT");
+        return -1;
+
     uint8_t byte;
     int retval = ringbuff_getc(&byte, buffer);
     if (retval == 1) {
@@ -41,6 +42,7 @@ uint8_t bad_apple_getc(ringbuffer* buffer) {
     return byte;
 }
 
+static uint8_t BMPAlloc[7200];
 struct dataBlock readBlock(ringbuffer* buffer) {
     struct dataBlock retval = {};
 
@@ -71,7 +73,8 @@ struct dataBlock readBlock(ringbuffer* buffer) {
 
     int blockSize = ((retval.x2+1) * (retval.y2+1) + 7) / 8; // bytes rounded up
 
-    retval.bitmap = (uint8_t*)malloc(sizeof(uint8_t) * blockSize);
+    //retval.bitmap = (uint8_t*)malloc(sizeof(uint8_t) * blockSize);
+    retval.bitmap = BMPAlloc;
 
     for (int i = 0; i < blockSize; i++) {
         retval.bitmap[i] = bad_apple_getc(buffer);
@@ -95,12 +98,10 @@ void render_video() {
 
     ringbuffer *buff50k = bad_apple_init();
 
-    int iteration = 0;
     while (1) {
         wdt_feed();
         struct dataBlock data = readBlock(buff50k);
-        iteration++;
-
+        __asm__("BKPT");
 
         if (data.eof)
             break;
@@ -121,24 +122,10 @@ void render_video() {
             }
 
             char string[50];
-            sprintf(string, "x=%i, y=%i, iteration=%i", data.x1, data.y1, iteration);
-            drawString(0, 0, string, 0x0000, 0xffff);
-
-            while(1)
-                wdt_feed();
-
-            char buffer[50];
-            sprintf(buffer, "x=%i, y=%i, x2=%i, y2=%i, %i", data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, iteration);
-            drawString(0, 0, buffer, 0x0000, 0xffff);
-            while(1)
-                wdt_feed();
 
             drawMono(data.x1, data.y1, data.x2+data.x1, data.y2+data.y1, data.bitmap, 0xffff, 0x0000);
 
-            free(data.bitmap);
+//            free(data.bitmap);
         }
-
     }
-    while (1);
-    //}
 }

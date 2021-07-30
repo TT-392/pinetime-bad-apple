@@ -3,10 +3,12 @@
 #include <stdbool.h>
 #include "ringbuff.h" 
 
+uint8_t buff50Kalloc[40000];
+ringbuffer structAlloc;
 ringbuffer *ringbuff_create(int size) {
-    ringbuffer *ringbuff = malloc(sizeof(ringbuffer));
-    ringbuff->buffer = malloc(sizeof(uint8_t) * size);
-    ringbuff->size = size;
+    ringbuffer *ringbuff = &structAlloc;//malloc(sizeof(ringbuffer));
+    ringbuff->buffer = buff50Kalloc;//malloc(sizeof(uint8_t) * size);
+    ringbuff->size = 40000;//size;
     ringbuff->read_ptr = 0;
     ringbuff->filled_space = 0;
     ringbuff->eof = -1;
@@ -14,8 +16,8 @@ ringbuffer *ringbuff_create(int size) {
 }
 
 void ringbuff_destroy(ringbuffer *ringbuff) {
-    free(ringbuff->buffer);
-    free(ringbuff);
+    //free(ringbuff->buffer);
+    //free(ringbuff);
 }
 
 // returns 1 when no more data is available, returns -1 if last byte in file (this byte is still a valid byte)
