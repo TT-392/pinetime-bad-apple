@@ -20,33 +20,14 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52.c \
   $(PROJ_DIR)/utils/wdt.c \
-  $(PROJ_DIR)/utils/break.c \
-  $(PROJ_DIR)/utils/semihost.c \
   $(PROJ_DIR)/utils/display_print.c \
-  $(PROJ_DIR)/utils/calctime.c \
-  $(PROJ_DIR)/utils/uart.c \
-  $(PROJ_DIR)/utils/battery.c \
-  $(PROJ_DIR)/utils/date.c \
-  $(PROJ_DIR)/utils/geometry.c \
-  $(PROJ_DIR)/utils/systick.c \
-  $(PROJ_DIR)/utils/adler32.c \
-  $(PROJ_DIR)/modules/sleep.c \
-  $(PROJ_DIR)/modules/scrollMenu.c \
-  $(PROJ_DIR)/modules/main_menu.c \
-  $(PROJ_DIR)/modules/settings.c \
-  $(PROJ_DIR)/modules/watchface.c \
-  $(PROJ_DIR)/modules/statusbar.c \
-  $(PROJ_DIR)/modules/steamLocomotive.c \
   $(PROJ_DIR)/drivers/pinetime_display_driver/display.c \
   $(PROJ_DIR)/drivers/flash.c \
-  $(PROJ_DIR)/drivers/i2c.c \
-  $(PROJ_DIR)/drivers/touch.c \
   $(PROJ_DIR)/bad_apple/bad_apple_flash.c \
   $(PROJ_DIR)/bad_apple/bad_apple_data.c \
   $(PROJ_DIR)/bad_apple/bad_apple.c \
   $(PROJ_DIR)/bad_apple/lz4.c \
   $(PROJ_DIR)/bad_apple/ringbuff.c \
-  $(PROJ_DIR)/core.c \
   $(PROJ_DIR)/main.c \
 
 
@@ -185,7 +166,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/log/src \
   $(PROJ_DIR)/external/nordic \
   $(PROJ_DIR)/external/timecake \
-  $(PROJ_DIR)/modules\
   $(PROJ_DIR)/drivers/pinetime_display_driver\
   $(PROJ_DIR)/utils\
   $(PROJ_DIR)/\
@@ -198,8 +178,8 @@ INC_FOLDERS += \
 LIB_FILES += \
 
 # Optimization flags
-OPT = -O3 -g3 #-Og
-#OPT = -O0 -g3
+#OPT = -O3 -g3 #-Og
+OPT = -O0 -g3
 # Uncomment the line below to enable link time optimization
 OPT += -flto
 

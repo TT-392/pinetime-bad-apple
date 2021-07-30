@@ -51,7 +51,6 @@
 
 void write_video() {
 #ifdef SPIFLASH
-#pragma message "adding spiflash data"
 
     uint64_t addr = SPIFLASH * 303104;
 

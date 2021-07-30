@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <nrf_gpio.h>
 #include "flash.h"
-#include "break.h"
 
 //TODO: set Block Protect bits to 0
 
@@ -98,6 +97,6 @@ void spiflash_init() {
     nrf_gpio_cfg_output(FLASH_CS);
     nrf_gpio_pin_write(FLASH_CS,1);
 
-    spiWriteByte(FLASH_RDI);
+//    spiWriteByte(FLASH_RDI);
 }
 

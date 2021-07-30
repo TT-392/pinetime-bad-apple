@@ -30,8 +30,8 @@ int ringbuff_getc(uint8_t *byte, ringbuffer *ringbuff) {
 
     ringbuff->filled_space--; 
     ringbuff->read_ptr++;
-    if (ringbuff->read_ptr == ringbuff->size)
-        ringbuff->read_ptr = 0;
+
+    ringbuff->read_ptr %= ringbuff->size;
     
     return 0;
 }
@@ -45,8 +45,7 @@ uint8_t ringbuff_getc_wrptr(int relative_address, ringbuffer *ringbuff) {
 
     int addr = ringbuff->read_ptr + ringbuff->filled_space - relative_address;
 
-    if (addr >= ringbuff->size)
-        addr -= ringbuff->size;
+    addr %= ringbuff->size;
 
     return ringbuff->buffer[addr];
 }

@@ -56,7 +56,7 @@ int bad_apple_fetch_and_decompress(uint64_t time) {
 
 ringbuffer *bad_apple_init() {
     spiflash_fetch();
-    buff50k = ringbuff_create(50001);
+    buff50k = ringbuff_create(50000);
     bad_apple_fetch_and_decompress(64000000);
     return buff50k;
 }
