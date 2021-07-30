@@ -172,14 +172,13 @@ INC_FOLDERS += \
   $(PROJ_DIR)/drivers\
   $(PROJ_DIR)/bad_apple\
   $(PROJ_DIR)/resources\
-  $(PROJ_DIR)/resources/icons\
 
 # Libraries common to all targets
 LIB_FILES += \
 
 # Optimization flags
-#OPT = -O3 -g3 #-Og
-OPT = -O0 -g3
+OPT = -O3 -g3 #-Og
+#OPT = -O0 -g3
 # Uncomment the line below to enable link time optimization
 OPT += -flto
 

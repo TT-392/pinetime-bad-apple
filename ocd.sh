@@ -12,6 +12,11 @@ then
     $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f flash.cfg
 fi
 
+if [ "$1" = "bootloader" ];
+then
+    $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f bootloader.cfg
+fi
+
 if [ "$1" = "makeflash" ];
 then
     ./compile.sh core
@@ -21,4 +26,9 @@ fi
 if [ "$1" = "flashmanual" ];
 then
     $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f flashmanual.cfg
+fi
+
+if [ "$1" = "monitor" ];
+then
+    $openocd_install_location/src/openocd -s $openocd_install_location/tcl -f monitor.cfg
 fi
