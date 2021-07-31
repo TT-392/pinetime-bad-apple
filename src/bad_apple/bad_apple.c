@@ -101,7 +101,6 @@ void render_video() {
     while (1) {
         wdt_feed();
         struct dataBlock data = readBlock(buff50k);
-        __asm__("BKPT");
 
         if (data.eof)
             break;
