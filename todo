@@ -1,4 +1,4 @@
 add something to spiflash init to clear potential block protects
 properly include rtc.h
-invert font color
 button before running while flashing
+add raw lz4 file

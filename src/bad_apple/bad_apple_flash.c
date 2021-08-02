@@ -48,6 +48,7 @@
 #include <stdio.h>
 #include "display_print.h"
 #include "nrf_delay.h"
+#include "nrf_gpio.h"
 
 void write_video() {
 #ifdef SPIFLASH
@@ -58,6 +59,21 @@ void write_video() {
 
     uint32_t length = videoLength;
     const uint8_t* tempVid = video;
+
+    char buffer[30];
+    sprintf(buffer, "Ready to flash: %i", SPIFLASH);
+    drawString(0, 0, buffer, 0x0000, 0xffff);
+
+    drawString(8, 110, "<- Start", 0x0000, 0xffff);
+
+    nrf_gpio_cfg_output(15);
+    nrf_gpio_pin_write(15, 1);
+    nrf_gpio_cfg_input(13, NRF_GPIO_PIN_PULLDOWN);
+    while (!nrf_gpio_pin_read(13))
+        wdt_feed();
+
+    drawString(8, 110, "        ", 0x0000, 0xffff);
+
 
     int sector = 0;
     while (length > 0) {
@@ -77,15 +93,17 @@ void write_video() {
 
         display_resume();
 
-        char buffer[30];
         sprintf(buffer, "Bytes left: %i           ", length);
         drawString(0, 0, buffer, 0x0000, 0xffff);
     }
 
-    char buffer[30];
-    sprintf(buffer, "done flashing %i        ", SPIFLASH);
+    sprintf(buffer, "Done flashing: %i        ", SPIFLASH);
     drawString(0, 0, buffer, 0x0000, 0xffff);
 
-    nrf_delay_ms(1000);
+    drawString(8, 110, "<- Play", 0x0000, 0xffff);
+
+    while (!nrf_gpio_pin_read(13))
+        wdt_feed();
+
 #endif
 }
