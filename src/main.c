@@ -13,17 +13,12 @@ static bool toggle = 1;
 
 int main(void) {
     display_init();
-
     spiflash_init();
 
-    nrf_gpio_cfg_input(19, NRF_GPIO_PIN_NOPULL);
-
+    drawSquare(0, 0, 239, 239, 0x0000);
     display_backlight(255);
-    drawSquare(0,0,239,239,0xffff);
-    drawSquare(0,0,40,40,0x0);
 
     write_video();
-
 
     render_video();
     while (1);

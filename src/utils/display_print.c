@@ -17,7 +17,7 @@ void drawChar (int x, int y, char character, uint16_t color_text, uint16_t color
             }
 
 
-            frame[charY] = pixelByte;
+            frame[charY] = ~pixelByte;
         }
 
         drawMono(x, y, x + 8 - 1, y + 16 - 1, frame, color_text, color_bg);
