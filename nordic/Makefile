@@ -27,6 +27,7 @@ SRC_FILES += \
   $(PROJ_DIR)/bad_apple/bad_apple_data.c \
   $(PROJ_DIR)/bad_apple/bad_apple.c \
   $(PROJ_DIR)/bad_apple/lz4.c \
+  $(PROJ_DIR)/bad_apple/rtc.c \
   $(PROJ_DIR)/bad_apple/ringbuff.c \
   $(PROJ_DIR)/main.c \
 

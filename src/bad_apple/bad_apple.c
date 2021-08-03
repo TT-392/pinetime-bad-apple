@@ -7,7 +7,7 @@
 #include "display.h"
 #include "bad_apple_data.h"
 #include "ringbuff.h"
-#include "rtc.c"
+#include "rtc.h"
 #include "wdt.h"
 #include "display_print.h"
 
