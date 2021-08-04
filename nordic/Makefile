@@ -9,6 +9,10 @@ ifndef SDK_ROOT
 $(error please provide an SDK_ROOT path)
 endif
 
+ifeq ("$(wildcard $(SDK_ROOT))","")
+$(error $(SDK_ROOT), no such file or directory)
+endif
+
 
 $(OUTPUT_DIRECTORY)/$(OUTFILENAME).out: \
   LINKER_SCRIPT_OTA  := nordic/ble_app_blinky_c_gcc_nrf52.ld
