@@ -31,7 +31,17 @@ static void spiRead(volatile uint8_t *data, int length) {
     NRF_SPIM0->RXD.MAXCNT = 0;
 }
 
-uint8_t checkStatus() {
+uint16_t checkStatus() {
+    nrf_gpio_pin_write(FLASH_CS,0);
+    uint8_t data[2];
+    uint8_t cmd = FLASH_RDSR;
+    spiWrite(&cmd, 1);
+    spiRead(data, 2);
+    nrf_gpio_pin_write(FLASH_CS,1);
+    return (data[0] + (data[1] << 8));
+}
+
+uint8_t checkShortStatus() {
     nrf_gpio_pin_write(FLASH_CS,0);
     uint8_t data;
     uint8_t cmd = FLASH_RDSR;
@@ -48,7 +58,7 @@ void spiflash_sector_erase(uint32_t addr) {
     uint8_t cmd[] = {FLASH_SE, addr >> 16, addr >> 8, addr};
     spiWrite(cmd, 4);
     nrf_gpio_pin_write(FLASH_CS,1);
-    while (checkStatus() & 1);
+    while (checkShortStatus() & 1);
 }
 
 void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length) {
@@ -71,7 +81,7 @@ void spiflash_write_data(uint32_t addr, uint8_t* data, uint32_t length) {
 
         nrf_gpio_pin_write(FLASH_CS,1);
 
-        while (checkStatus() & 1); // potential optimization here, potentially unneccesary idle time
+        while (checkShortStatus() & 1); // potential optimization here, potentially unneccesary idle time
     }
 }
 
@@ -96,7 +106,5 @@ void spiflash_read_data(uint32_t addr, uint8_t* data, uint32_t length) {
 void spiflash_init() {
     nrf_gpio_cfg_output(FLASH_CS);
     nrf_gpio_pin_write(FLASH_CS,1);
-
-//    spiWriteByte(FLASH_RDI);
 }
 
