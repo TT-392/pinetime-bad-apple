@@ -1,6 +1,12 @@
 #!/bin/bash
 
 #I know this can be done faster (not having to rebuild everything for each file), but good chance you will only have to run this stuff once, so I am not gonna put in too much effort.
+export SDK_ROOT=./sdk
+
+if [ ! -d "$SDK_ROOT" ]; then
+    echo "$SDK_ROOT no such directory"
+    exit 1
+fi
 
 if [ "$1" = "core" ];
 then

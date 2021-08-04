@@ -2,9 +2,13 @@ PROJECT_NAME     := ble_app_blinky_c_pca10040_s132
 TARGETS          := $(OUTFILENAME)
 OUTPUT_DIRECTORY := _build
 
-SDK_ROOT := ../sdk
 PROJ_DIR := ./src
 GNU_INSTALL_ROOT := /bin/
+
+ifndef SDK_ROOT
+$(error please provide an SDK_ROOT path)
+endif
+
 
 $(OUTPUT_DIRECTORY)/$(OUTFILENAME).out: \
   LINKER_SCRIPT_OTA  := nordic/ble_app_blinky_c_gcc_nrf52.ld
