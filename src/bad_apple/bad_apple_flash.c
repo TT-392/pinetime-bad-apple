@@ -66,9 +66,6 @@ void write_video() {
 
     drawString(8, 110, "<- Start", 0x0000, 0xffff);
 
-    nrf_gpio_cfg_output(15);
-    nrf_gpio_pin_write(15, 1);
-    nrf_gpio_cfg_input(13, NRF_GPIO_PIN_PULLDOWN);
     while (!nrf_gpio_pin_read(13))
         wdt_feed();
 
@@ -99,11 +96,6 @@ void write_video() {
 
     sprintf(buffer, "Done flashing: %i        ", SPIFLASH);
     drawString(0, 0, buffer, 0x0000, 0xffff);
-
-    drawString(8, 110, "<- Play", 0x0000, 0xffff);
-
-    while (!nrf_gpio_pin_read(13))
-        wdt_feed();
 
 #endif
 }

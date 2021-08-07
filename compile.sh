@@ -29,7 +29,7 @@ then
     #so, like, why does this work??
     python3 -m nordicsemi dfu genpkg --dev-type 0x0052 --application ../_build/bad_apple_ota.hex ../_build/ota/bad_apple_ota.zip
     cd -
-    elif [ "$1" = "spiflash_ota" ];
+elif [ "$1" = "spiflash_ota" ];
 then
     for f in src/bad_apple/resources/video*; do
         fileNr=${f#src/bad_apple/resources/video_}
@@ -43,11 +43,15 @@ then
         python3 -m nordicsemi dfu genpkg --dev-type 0x0052 --application ../_build/bad_apple_flash_ota_$fileNr.hex ../_build/ota/${fileNr}_bad_apple_flash_ota_$fileNr.zip
         cd -
     done
+elif [ "$1" = "clean" ];
+then
+    make clean
 else
     echo "Compilable targets:
 
 core
 spiflash
 core_ota
-spiflash_ota"
+spiflash_ota
+clean"
 fi
