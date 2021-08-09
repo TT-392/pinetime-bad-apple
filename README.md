@@ -17,7 +17,13 @@ If one of the flash binaries is still on the watch, you should already be able t
 Just like with the flash binaries, there is an ota binary (bad_apple_ota.zip), and a binary for flashing over the programming pins (bad_apple.hex).
 
 ## Compiling  
-Extract the nRF5 SDK (https://www.nordicsemi.com/Software-and-tools/Software/nRF5-SDK/Download) somewhere on your computer, the default in the compile script expects it to be in the root directory of this project, but you can change this path by changing the ```SDK_ROOT``` path in the compile.sh script. Also, don't forget to load the submodules ```git submodule update --init```.
+Extract the nRF5 SDK (https://www.nordicsemi.com/Software-and-tools/Software/nRF5-SDK/Download) somewhere on your computer, the default in the compile script expects it to be in the root directory of this project, but you can change this path by changing the ```SDK_ROOT``` path in the compile.sh script. Also, don't forget to load the submodules ```git submodule update --init```. There are also a couple of dependencies you are gonna need to install:\
+arm-none-eabi\
+arm-none-eabi-newlib (or newlib-arm-none-eabi depending on your distro)\
+And to compile the ota binaries, the following python packages:\
+click\
+pyserial
+
 
 The compile.sh script can be used to compile different targets:
 
@@ -25,3 +31,7 @@ The compile.sh script can be used to compile different targets:
 ```./compile.sh spi flash``` will compile the 14 spi flash files for flashing through the programming pins\
 ```./compile.sh core_ota``` will compile the core for flashing over bluetooth\
 ```./compile.sh spi flash_ota``` will compile the 14 spi flash files for flashing over bluetooth\
+
+
+
+
