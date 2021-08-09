@@ -6,10 +6,14 @@ You can run bad apple on a dev kit through the programming pins or over Bluetoot
 
 There are 2 parts to this application, one is the video in flash, and the other is the core, which is actually the code that runs on the smartwatch. 
 
-First, you have to flash the video. Because I haven't looked into the Bluetooth stack yet, my solution to write the video to the spi flash is to divide the video file into 14 binaries which should be flashed one by one (If you have a better method of doing this, the video file can be found at: https://github.com/TT-392/Pinetime-bad-apple-video-processor). \
+### Writing the video to the spi flash
+First, you have to flash the video. Because I haven't looked into the Bluetooth stack yet, my solution to write the video to the spi flash is to divide the video file into 14 binaries which should be flashed one by one (If you have a better method of doing this, the video file can be found at: https://github.com/TT-392/Pinetime-bad-apple-video-processor). 
+
 If you are uploading to a watch with the wasp-os bootloader, you are gonna want to get the ota binaries: x_bad_apple_flash_ota_x.zip, and if you are uploading to an open watch, over the programming pins, you are gonna want to use the raw binaries: bad_apple_flash_x.hex. After uploading each one of these binaries, make sure to follow the ui on the screen to actually write that part of the video to spi flash (you can also play the video through this ui, but it will stop playing / do strange stuff at some point if you haven't flashed the entire thing yet).
 
-If one of the flash binaries is still on the watch, you should already be able to play bad apple. In case you are going to want to run bad apple more than once (or have used a different method of writing to the spi flash), you are probably gonna want to flash the core binary (mainly so you aren't writing a bunch of stuff to the spi flash every time you restart). The core binary is basically a flash binary with the writing to flash part stripped out.\
+### Flashing the core binary to actually play the video
+If one of the flash binaries is still on the watch, you should already be able to play bad apple. In case you are going to want to run bad apple more than once (or have used a different method of writing to the spi flash), you are probably gonna want to flash the core binary (mainly so you aren't writing a bunch of stuff to the spi flash every time you restart). The core binary is basically a flash binary with the writing to flash part stripped out.
+
 Just like with the flash binaries, there is an ota binary (bad_apple_ota.zip), and a binary for flashing over the programming pins (bad_apple.hex).
 
 ## Compiling  
