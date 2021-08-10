@@ -34,8 +34,7 @@ The compile.sh script can be used to compile different targets:
 ```./compile.sh core``` will compile the core for flashing through the programming pins\
 ```./compile.sh spi flash``` will compile the 14 spi flash files for flashing through the programming pins\
 ```./compile.sh core_ota``` will compile the core for flashing over bluetooth\
-```./compile.sh spi flash_ota``` will compile the 14 spi flash files for flashing over bluetooth\
-
+```./compile.sh spi flash_ota``` will compile the 14 spi flash files for flashing over bluetooth
 
 
 
