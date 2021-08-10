@@ -2,7 +2,7 @@
 This repo contains the code to run bad apple on the pinetime. The code to process the video beforehand, on your computer, can be fount at: https://github.com/TT-392/Pinetime-bad-apple-video-processor.
 
 ## Running bad apple on your own pinetime
-**IMPORTANT: Do not put bad apple on a sealed watch, unless you are prepared to open it up. The infinitime bootloader stores the recovery firmware in the spi flash of the watch, this will be erased by bad apple. I have heard that the software used to go from wasp-os to infinitime might flash the os itself as well, but I haven't tried this. I'd say that there is a chance that it would work, but I definitely don't recommend it.**
+**IMPORTANT: Do not put bad apple on a sealed watch, unless you are prepared to open it up. The Infinitime bootloader stores the recovery firmware in the spi flash of the watch, this will be erased by bad apple. I have heard that the software used to go from wasp-os to Infinitime might flash the os itself as well, but I haven't tried this. I'd say that there is a chance that it would work, but I definitely don't recommend it.**
 
 You can run bad apple programmed through the programming pins or over Bluetooth through the wasp-os bootloader. If you are going to be using the wasp-os bootloader, you should go to wasp-os for information on how to install it. If you have installed the wasp-os bootloader, you can use something like the nrf connect android app to actually flash the files. If you are programming over the programming header, you probably already have some experience flashing binaries onto your watch, but if not, info on this can be found on https://wiki.pine64.org/index.php/Reprogramming_the_PineTime.
 
