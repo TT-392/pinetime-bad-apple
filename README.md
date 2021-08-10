@@ -1,5 +1,5 @@
 # Pinetime bad apple
-This repo contains the code to run bad apple on the pinetime. The code to process the video beforehand, on your computer, can be fount at: https://github.com/TT-392/Pinetime-bad-apple-video-processor.
+This repo contains the code to run bad apple on the pinetime. The code to process the video beforehand, on your computer, can be found at: https://github.com/TT-392/Pinetime-bad-apple-video-processor.
 
 ## Running bad apple on your own pinetime
 **IMPORTANT: Do not put bad apple on a sealed watch, unless you are prepared to open it up. The Infinitime bootloader stores the recovery firmware in the spi flash of the watch, this will be erased by bad apple. I have heard that the software used to go from wasp-os to Infinitime might flash the os itself as well, but I haven't tried this. I'd say that there is a chance that it would work, but I definitely don't recommend it.**
